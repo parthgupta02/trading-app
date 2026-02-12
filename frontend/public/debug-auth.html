@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Firebase Auth Debug</title>
+</head>
+
+<body>
+    <h1>Auth Debug</h1>
+    <div id="status">Initializing...</div>
+    <pre id="result"></pre>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, deleteUser } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // Config from src/lib/firebase.js
+        const firebaseConfig = {
+            apiKey: "AIzaSyAYy9FONBnwilc2f3WdTCGFQ2-W3jQvE3E",
+            authDomain: "parth-trading.firebaseapp.com",
+            projectId: "parth-trading",
+            storageBucket: "parth-trading.firebasestorage.app",
+            messagingSenderId: "629101446151",
+            appId: "1:629101446151:web:d91110064a8889497916a2",
+            measurementId: "G-7JQ523ETHN"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const mobile = "9685889940";
+        const email = `phone-${mobile}@trade-tracker.app`;
+        const tempPassword = "TempPassword123!";
+
+        const statusDiv = document.getElementById('status');
+        const resultDiv = document.getElementById('result');
+
+        async function verifyUser() {
+            statusDiv.textContent = `Checking user: ${email}`;
+
+            try {
+                // Try to create user
+                const userCredential = await createUserWithEmailAndPassword(auth, email, tempPassword);
+
+                // If successful, user DID NOT exist.
+                const user = userCredential.user;
+                statusDiv.textContent = "Status: User CREATED (did not exist before)";
+                resultDiv.textContent = JSON.stringify({ exists: false, uid: user.uid }, null, 2);
+
+                // Cleanup
+                try {
+                    await deleteUser(user);
+                    statusDiv.textContent += " (Cleaned up/Deleted temporary user)";
+                } catch (cleanupErr) {
+                    console.error("Cleanup failed", cleanupErr);
+                    statusDiv.textContent += " (Cleanup failed - user needs manual deletion)";
+                }
+
+            } catch (error) {
+                if (error.code === 'auth/email-already-in-use') {
+                    statusDiv.textContent = "Status: User EXISTS";
+                    resultDiv.textContent = JSON.stringify({ exists: true, code: error.code }, null, 2);
+                } else {
+                    statusDiv.textContent = `Status: Error (${error.code})`;
+                    resultDiv.textContent = JSON.stringify({ error: error.message, code: error.code }, null, 2);
+                }
+            }
+        }
+
+        verifyUser();
+    </script>
+</body>
+
+</html>
