@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
     LayoutDashboard,
@@ -13,7 +13,12 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useTabStore } from '../store/tabStore';
 
-export const Sidebar = ({ isOpen, toggleSidebar }) => {
+interface SidebarProps {
+    isOpen: boolean;
+    toggleSidebar: () => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     const { logout } = useAuth();
     const { addTab } = useTabStore();
 

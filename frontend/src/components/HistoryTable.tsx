@@ -9,25 +9,30 @@ import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 import { Modal } from './ui/Modal';
 import { Input } from './ui/Input';
+import { Trade } from '../types';
 
-export const HistoryTable = ({ commodity }) => {
+interface HistoryTableProps {
+    commodity: string;
+}
+
+export const HistoryTable: React.FC<HistoryTableProps> = ({ commodity }) => {
     const { trades, APP_ID } = useData();
     const { currentUser } = useAuth();
 
-    const [editingTrade, setEditingTrade] = useState(null);
-    const [deletingTradeId, setDeletingTradeId] = useState(null);
+    const [editingTrade, setEditingTrade] = useState<Trade | null>(null);
+    const [deletingTradeId, setDeletingTradeId] = useState<string | null>(null);
 
     // Filter and Sort
     const filteredTrades = trades
         .filter((t) => t.commodity === commodity)
         .sort((a, b) => {
-            const dateA = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp || 0);
-            const dateB = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp || 0);
-            return dateA - dateB;
+            const dateA = a.timestamp && typeof a.timestamp === 'object' && 'toDate' in a.timestamp ? a.timestamp.toDate() : new Date((a.timestamp as any) || 0);
+            const dateB = b.timestamp && typeof b.timestamp === 'object' && 'toDate' in b.timestamp ? b.timestamp.toDate() : new Date((b.timestamp as any) || 0);
+            return dateA.getTime() - dateB.getTime();
         });
 
     // Calculate Weeks
-    const weekMap = {};
+    const weekMap: { [key: string]: number } = {};
     let currentWeekNumber = 0;
 
     const tradesWithWeek = filteredTrades.map(trade => {
@@ -51,13 +56,13 @@ export const HistoryTable = ({ commodity }) => {
         }
     };
 
-    const handleUpdate = async (e) => {
+    const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!editingTrade || !currentUser) return;
+        if (!editingTrade || !currentUser || !editingTrade.id) return;
 
         // Validation similar to Form
-        const buy = parseFloat(editingTrade.buyAmount);
-        const sell = parseFloat(editingTrade.sellAmount);
+        const buy = parseFloat(editingTrade.buyAmount as string);
+        const sell = parseFloat(editingTrade.sellAmount as string);
 
         try {
             const ref = doc(db, `artifacts/${APP_ID}/users/${currentUser.uid}/commodity_trades`, editingTrade.id);
@@ -90,7 +95,7 @@ export const HistoryTable = ({ commodity }) => {
                     </thead>
                     <tbody className="bg-gray-800 divide-y divide-gray-700">
                         {tradesWithWeek.length === 0 ? (
-                            <tr><td colspan="5" class="px-3 py-4 text-center text-sm text-gray-400">No trades recorded yet.</td></tr>
+                            <tr><td colSpan={5} className="px-3 py-4 text-center text-sm text-gray-400">No trades recorded yet.</td></tr>
                         ) : (
                             tradesWithWeek.map((trade) => (
                                 <tr key={trade.id} className="hover:bg-gray-700 transition duration-150">
@@ -100,16 +105,16 @@ export const HistoryTable = ({ commodity }) => {
                                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-300">
                                         {trade.date || formatDate(trade.timestamp)}
                                     </td>
-                                    <td className={`px-3 py-4 whitespace-nowrap text-sm font-semibold ${trade.buyAmount > 0 ? 'text-green-400' : 'text-gray-500'}`}>
+                                    <td className={`px-3 py-4 whitespace-nowrap text-sm font-semibold ${Number(trade.buyAmount) > 0 ? 'text-green-400' : 'text-gray-500'}`}>
                                         {Number(trade.buyAmount).toFixed(2)}
                                     </td>
-                                    <td className={`px-3 py-4 whitespace-nowrap text-sm font-semibold ${trade.sellAmount > 0 ? 'text-red-400' : 'text-gray-500'}`}>
+                                    <td className={`px-3 py-4 whitespace-nowrap text-sm font-semibold ${Number(trade.sellAmount) > 0 ? 'text-red-400' : 'text-gray-500'}`}>
                                         {Number(trade.sellAmount).toFixed(2)}
                                     </td>
                                     <td className="px-3 py-4 whitespace-nowrap text-sm">
                                         <div className="flex space-x-2">
                                             <Button variant="primary" onClick={() => setEditingTrade(trade)} className="px-2 py-1 text-xs">Edit</Button>
-                                            <Button variant="danger" onClick={() => setDeletingTradeId(trade.id)} className="px-2 py-1 text-xs">Delete</Button>
+                                            <Button variant="danger" onClick={() => setDeletingTradeId(trade.id as string)} className="px-2 py-1 text-xs">Delete</Button>
                                         </div>
                                     </td>
                                 </tr>
@@ -127,14 +132,14 @@ export const HistoryTable = ({ commodity }) => {
                             label="Buy Rate"
                             type="number"
                             step="any"
-                            value={editingTrade.buyAmount}
+                            value={editingTrade.buyAmount as string}
                             onChange={e => setEditingTrade({ ...editingTrade, buyAmount: e.target.value })}
                         />
                         <Input
                             label="Sell Rate"
                             type="number"
                             step="any"
-                            value={editingTrade.sellAmount}
+                            value={editingTrade.sellAmount as string}
                             onChange={e => setEditingTrade({ ...editingTrade, sellAmount: e.target.value })}
                         />
                         <div className="flex space-x-2 justify-end mt-4">

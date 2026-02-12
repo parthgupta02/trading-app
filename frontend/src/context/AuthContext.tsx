@@ -1,20 +1,42 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import {
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
     signOut,
-    onAuthStateChanged
+    onAuthStateChanged,
+    User,
+    UserCredential
 } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from '../lib/firebase';
 
-const AuthContext = createContext();
+interface AuthContextType {
+    currentUser: User | null;
+    loading: boolean;
+    login: (mobile: string, password: string) => Promise<UserCredential>;
+    register: (fullName: string, mobile: string, password: string) => Promise<UserCredential>;
+    logout: () => Promise<void>;
+    convertMobileToEmail: (mobile: string) => string;
+    extractMobileFromEmail: (email: string | null) => string;
+}
 
-export const useAuth = () => useContext(AuthContext);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }) => {
-    const [currentUser, setCurrentUser] = useState(null);
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
+    return context;
+};
+
+interface AuthProviderProps {
+    children: ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
     // Constants for mobile -> email conversion
@@ -30,21 +52,21 @@ export const AuthProvider = ({ children }) => {
         return unsubscribe;
     }, []);
 
-    const convertMobileToEmail = (mobile) => {
+    const convertMobileToEmail = (mobile: string) => {
         return `${PHONE_PREFIX}${mobile}${FAKE_DOMAIN}`;
     };
 
-    const extractMobileFromEmail = (email) => {
+    const extractMobileFromEmail = (email: string | null) => {
         if (!email) return '';
         return email.replace(PHONE_PREFIX, "").split('@')[0];
     };
 
-    const login = (mobile, password) => {
+    const login = (mobile: string, password: string) => {
         const email = convertMobileToEmail(mobile);
         return signInWithEmailAndPassword(auth, email, password);
     };
 
-    const register = async (fullName, mobile, password) => {
+    const register = async (fullName: string, mobile: string, password: string) => {
         const email = convertMobileToEmail(mobile);
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const newUser = userCredential.user;
@@ -63,7 +85,7 @@ export const AuthProvider = ({ children }) => {
         return signOut(auth);
     };
 
-    const value = {
+    const value: AuthContextType = {
         currentUser,
         login,
         register,

@@ -4,7 +4,16 @@ import { useData } from '../context/DataContext';
 import { getMondayOfWeek } from '../utils/dateUtils';
 import { Card } from '../components/ui/Card';
 
-const SummaryCard = ({ title, commodity, trades, currentMonday }) => {
+import { Trade } from '../types';
+
+interface SummaryCardProps {
+    title: string;
+    commodity: string;
+    trades: Trade[];
+    currentMonday: string;
+}
+
+const SummaryCard: React.FC<SummaryCardProps> = ({ title, commodity, trades, currentMonday }) => {
     const isGold = commodity === 'gold';
     const titleColor = isGold ? 'text-yellow-400' : 'text-gray-300';
 
@@ -16,8 +25,8 @@ const SummaryCard = ({ title, commodity, trades, currentMonday }) => {
         // Check if trade belongs to commodity and current week
         if (t.commodity === commodity && getMondayOfWeek(t.timestamp) === currentMonday) {
             totalCount++;
-            const buy = parseFloat(t.buyAmount) || 0;
-            const sell = parseFloat(t.sellAmount) || 0;
+            const buy = parseFloat(t.buyAmount as string) || 0;
+            const sell = parseFloat(t.sellAmount as string) || 0;
             if (buy > 0) { totalBuy += buy; buyCount++; }
             if (sell > 0) { totalSell += sell; sellCount++; }
         }

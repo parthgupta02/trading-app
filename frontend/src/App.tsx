@@ -16,7 +16,7 @@ import { ReportPage } from './pages/ReportPage';
 import { ProfilePage } from './pages/ProfilePage';
 
 // Protected Route Wrapper
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { currentUser, loading } = useAuth();
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>;
@@ -25,11 +25,11 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  return children;
+  return <>{children}</>;
 };
 
 // Public Route Wrapper (redirects to home if already logged in)
-const PublicRoute = ({ children }) => {
+const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { currentUser, loading } = useAuth();
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>;
@@ -38,7 +38,7 @@ const PublicRoute = ({ children }) => {
     return <Navigate to="/" replace />;
   }
 
-  return children;
+  return <>{children}</>;
 };
 
 function App() {

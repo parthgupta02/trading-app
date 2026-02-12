@@ -1,17 +1,41 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { collection, query, onSnapshot, doc, getDoc, setDoc } from "firebase/firestore";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { collection, query, onSnapshot, doc } from "firebase/firestore";
 import { db } from '../lib/firebase';
 import { useAuth } from './AuthContext';
+import { Trade } from '../types';
 
-const DataContext = createContext();
+interface UserProfile {
+    fullName: string;
+    email: string;
+    [key: string]: any;
+}
 
-export const useData = () => useContext(DataContext);
+interface DataContextType {
+    trades: Trade[];
+    profile: UserProfile;
+    loadingData: boolean;
+    APP_ID: string;
+}
 
-export const DataProvider = ({ children }) => {
+const DataContext = createContext<DataContextType | undefined>(undefined);
+
+export const useData = () => {
+    const context = useContext(DataContext);
+    if (!context) {
+        throw new Error('useData must be used within a DataProvider');
+    }
+    return context;
+};
+
+interface DataProviderProps {
+    children: ReactNode;
+}
+
+export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     const { currentUser } = useAuth();
-    const [trades, setTrades] = useState([]);
-    const [profile, setProfile] = useState({ fullName: '', email: '' });
+    const [trades, setTrades] = useState<Trade[]>([]);
+    const [profile, setProfile] = useState<UserProfile>({ fullName: '', email: '' });
     const [loadingData, setLoadingData] = useState(false);
 
     const APP_ID = 'default-app-id'; // Critical for matching existing data path
@@ -30,7 +54,7 @@ export const DataProvider = ({ children }) => {
         const q = query(collection(db, tradesPath));
 
         const unsubscribeTrades = onSnapshot(q, (querySnapshot) => {
-            const tradeList = [];
+            const tradeList: Trade[] = [];
             querySnapshot.forEach((doc) => {
                 tradeList.push({ id: doc.id, ...doc.data() });
             });
@@ -46,7 +70,7 @@ export const DataProvider = ({ children }) => {
         const profileDocRef = doc(db, 'artifacts', APP_ID, 'user_profiles', currentUser.uid);
         const unsubscribeProfile = onSnapshot(profileDocRef, (docSnap) => {
             if (docSnap.exists()) {
-                setProfile(docSnap.data());
+                setProfile(docSnap.data() as UserProfile);
             }
         });
 
@@ -56,7 +80,7 @@ export const DataProvider = ({ children }) => {
         };
     }, [currentUser]);
 
-    const value = {
+    const value: DataContextType = {
         trades,
         profile,
         loadingData,

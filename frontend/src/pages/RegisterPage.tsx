@@ -6,30 +6,43 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
 
-export const LoginPage = () => {
+export const RegisterPage = () => {
+    const [fullName, setFullName] = useState('');
     const [mobile, setMobile] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const { login, convertMobileToEmail } = useAuth();
+    const { register } = useAuth();
     const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+
+        if (fullName.trim() === '') {
+            setError('Please enter your full name.');
+            return;
+        }
+        if (!/^\d{10}$/.test(mobile)) {
+            setError('Mobile Number must be 10 digits.');
+            return;
+        }
+        if (password.length < 6) {
+            setError('Password must be at least 6 characters.');
+            return;
+        }
+
         setLoading(true);
 
         try {
-            const email = convertMobileToEmail(mobile);
-            console.log("Attempting login with:", email);
-            await login(mobile, password);
+            await register(fullName, mobile, password);
             navigate('/');
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-                setError('Invalid mobile number or password.');
+            if (err.code === 'auth/email-already-in-use') {
+                setError('This mobile number is already taken.');
             } else {
-                setError('Failed to log in. Please try again.');
+                setError('Failed to create account.');
             }
         } finally {
             setLoading(false);
@@ -38,12 +51,21 @@ export const LoginPage = () => {
 
     return (
         <Card className="bg-gray-800 border-gray-700">
-            <h2 className="text-3xl font-bold text-center text-white mb-6">Login</h2>
+            <h2 className="text-3xl font-bold text-center text-white mb-6">Create Account</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
+                <Input
+                    label="Full Name"
+                    type="text"
+                    placeholder="Enter your full name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                />
                 <Input
                     label="Mobile Number"
                     type="tel"
                     placeholder="Enter 10-digit number"
+                    maxLength={10}
                     value={mobile}
                     onChange={(e) => setMobile(e.target.value)}
                     required
@@ -51,19 +73,20 @@ export const LoginPage = () => {
                 <Input
                     label="Password"
                     type="password"
+                    placeholder="Min 6 chars"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                 />
                 {error && <p className="text-red-400 text-sm">{error}</p>}
-                <Button type="submit" loading={loading} className="w-full bg-blue-600 hover:bg-blue-500">
-                    Login
+                <Button type="submit" loading={loading} variant="success" className="w-full">
+                    Create Account
                 </Button>
             </form>
             <p className="text-center text-sm text-gray-400 mt-6">
-                Don't have an account?{' '}
-                <Link to="/register" className="font-medium text-blue-400 hover:underline">
-                    Sign Up
+                Already have an account?{' '}
+                <Link to="/login" className="font-medium text-blue-400 hover:underline">
+                    Login
                 </Link>
             </p>
         </Card>

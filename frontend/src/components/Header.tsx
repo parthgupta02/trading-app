@@ -3,7 +3,11 @@ import { TabList } from './TabList';
 import { useAuth } from '../context/AuthContext';
 import { Bell, Search } from 'lucide-react';
 
-export const Header = ({ isOpen }) => {
+interface HeaderProps {
+    isOpen: boolean;
+}
+
+export const Header: React.FC<HeaderProps> = ({ isOpen }) => {
     const { currentUser } = useAuth();
 
     return (

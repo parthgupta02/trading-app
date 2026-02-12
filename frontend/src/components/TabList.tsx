@@ -3,10 +3,10 @@ import { X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTabStore } from '../store/tabStore';
 
-export const TabList = () => {
+export const TabList: React.FC = () => {
     const { tabs, activeTab, removeTab } = useTabStore();
     const navigate = useNavigate();
-    const scrollContainerRef = useRef(null);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     // Auto-scroll to active tab
     useEffect(() => {
@@ -18,11 +18,11 @@ export const TabList = () => {
         }
     }, [activeTab]);
 
-    const handleTabClick = (path) => {
+    const handleTabClick = (path: string) => {
         navigate(path);
     };
 
-    const handleRemoveTab = (e, path) => {
+    const handleRemoveTab = (e: React.MouseEvent, path: string) => {
         e.stopPropagation();
 
         // Find tab index to determine next tab before removing

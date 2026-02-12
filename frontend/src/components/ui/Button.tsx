@@ -9,7 +9,14 @@ const variants = {
     warning: 'bg-yellow-600 hover:bg-yellow-500 text-gray-900', // Matches Gold theme
 };
 
-export const Button = ({
+type ButtonVariant = keyof typeof variants;
+
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    variant?: ButtonVariant;
+    loading?: boolean;
+}
+
+export const Button: React.FC<ButtonProps> = ({
     children,
     variant = 'primary',
     className = '',

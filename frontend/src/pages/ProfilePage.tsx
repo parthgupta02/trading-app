@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
@@ -50,7 +49,7 @@ export const ProfilePage = () => {
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-400">Mobile Number</label>
-                        <p className="text-lg text-white font-mono">{extractMobileFromEmail(currentUser?.email)}</p>
+                        <p className="text-lg text-white font-mono">{extractMobileFromEmail(currentUser?.email || '')}</p>
                     </div>
                     <div className="pt-4">
                         <Button onClick={handleLogout} variant="secondary" className="w-full sm:w-auto">

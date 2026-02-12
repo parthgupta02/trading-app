@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { ReportTable } from '../components/ReportTable';
 import { Card } from '../components/ui/Card';
 

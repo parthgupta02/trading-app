@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
 import { Header } from '../components/Header';
@@ -8,7 +8,7 @@ import { useTabStore } from '../store/tabStore';
 export const MainLayout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const { extractMobileFromEmail, currentUser } = useAuth();
-    const mobile = extractMobileFromEmail(currentUser?.email);
+    const mobile = extractMobileFromEmail(currentUser?.email || '');
 
     // Zustand Tab Sync
     const location = useLocation();

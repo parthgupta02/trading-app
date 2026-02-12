@@ -5,28 +5,47 @@ import { calculateFifoPL } from '../utils/calculations';
 import { getMondayOfWeek } from '../utils/dateUtils';
 import { Card } from './ui/Card';
 import { Modal } from './ui/Modal';
+import { Trade, TradePair } from '../types';
 
-export const ReportTable = () => {
+interface DetailData {
+    totalPL: number;
+    pairs: TradePair[];
+    totalCommission: number;
+}
+
+interface CombinedDetailData {
+    gold: DetailData;
+    silver: DetailData;
+}
+
+interface SelectedDetail {
+    commodity: string;
+    week: string;
+    title: string;
+    data: DetailData | CombinedDetailData;
+}
+
+export const ReportTable: React.FC = () => {
     const { trades, loadingData } = useData();
-    const [selectedDetail, setSelectedDetail] = useState(null); // { commodity, week, title, data }
+    const [selectedDetail, setSelectedDetail] = useState<SelectedDetail | null>(null); // { commodity, week, title, data }
 
     if (loadingData) return <div className="text-center p-4">Loading reports...</div>;
 
     // Group trades by week
-    const weeklyData = {};
-    const weekMap = {};
+    const weeklyData: { [key: string]: { gold: Trade[], silver: Trade[] } } = {};
+    const weekMap: { [key: string]: number } = {};
     let weekCounter = 0;
 
     // Sort trades first
     const sortedTrades = [...trades].sort((a, b) => {
-        const dateA = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp || 0);
-        const dateB = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp || 0);
-        return dateA - dateB;
+        const dateA = a.timestamp && typeof a.timestamp === 'object' && 'toDate' in a.timestamp ? a.timestamp.toDate() : new Date((a.timestamp as any) || 0);
+        const dateB = b.timestamp && typeof b.timestamp === 'object' && 'toDate' in b.timestamp ? b.timestamp.toDate() : new Date((b.timestamp as any) || 0);
+        return dateA.getTime() - dateB.getTime();
     });
 
     sortedTrades.forEach(trade => {
         const monday = getMondayOfWeek(trade.timestamp);
-        let weekNum;
+        let weekNum: number;
         if (weekMap[monday] === undefined) {
             weekCounter++;
             weekMap[monday] = weekCounter;
@@ -76,7 +95,7 @@ export const ReportTable = () => {
                     className={`px-4 py-3 whitespace-nowrap text-right text-sm font-medium cursor-pointer hover:underline ${totalPL > 0 ? 'text-green-400' : (totalPL < 0 ? 'text-red-400' : 'text-gray-400')}`}
                     onClick={() => {
                         // For 'all', we combine the results roughly for display or just show both
-                        setSelectedDetail({ commodity: 'all', week: weekNum, title: `Week ${weekNum} Combined P&L`, data: { gold: goldResult, silver: silverResult } })
+                        setSelectedDetail({ commodity: 'all', week: weekNum, title: `Week ${weekNum} Combined P&L`, data: { gold: goldResult, silver: silverResult } });
                     }}
                 >
                     {totalPL.toFixed(2)}
@@ -123,15 +142,15 @@ export const ReportTable = () => {
                 <Modal isOpen={!!selectedDetail} onClose={() => setSelectedDetail(null)} title={selectedDetail.title}>
                     {/* Simple Detail View */}
                     {selectedDetail.commodity !== 'all' ? (
-                        <DetailContent name={selectedDetail.commodity} result={selectedDetail.data} />
+                        <DetailContent name={selectedDetail.commodity} result={selectedDetail.data as DetailData} />
                     ) : (
                         <div className="space-y-6">
-                            <DetailContent name="gold" result={selectedDetail.data.gold} />
-                            <DetailContent name="silver" result={selectedDetail.data.silver} />
+                            <DetailContent name="gold" result={(selectedDetail.data as CombinedDetailData).gold} />
+                            <DetailContent name="silver" result={(selectedDetail.data as CombinedDetailData).silver} />
                             <div className="pt-4 border-t border-gray-600 flex justify-between font-bold">
                                 <span>Net Total:</span>
-                                <span className={(selectedDetail.data.gold.totalPL + selectedDetail.data.silver.totalPL) > 0 ? 'text-green-400' : 'text-red-400'}>
-                                    {(selectedDetail.data.gold.totalPL + selectedDetail.data.silver.totalPL).toFixed(2)}
+                                <span className={((selectedDetail.data as CombinedDetailData).gold.totalPL + (selectedDetail.data as CombinedDetailData).silver.totalPL) > 0 ? 'text-green-400' : 'text-red-400'}>
+                                    {((selectedDetail.data as CombinedDetailData).gold.totalPL + (selectedDetail.data as CombinedDetailData).silver.totalPL).toFixed(2)}
                                 </span>
                             </div>
                         </div>
@@ -142,7 +161,12 @@ export const ReportTable = () => {
     );
 };
 
-const DetailContent = ({ name, result }) => (
+interface DetailContentProps {
+    name: string;
+    result: DetailData;
+}
+
+const DetailContent: React.FC<DetailContentProps> = ({ name, result }) => (
     <div>
         <h4 className={`text-lg font-bold uppercase mb-2 ${name === 'gold' ? 'text-yellow-400' : 'text-gray-400'}`}>{name}</h4>
         {result.pairs.length === 0 ? (

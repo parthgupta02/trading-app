@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { TradeForm } from '../components/TradeForm';
 import { HistoryTable } from '../components/HistoryTable';
 

@@ -1,15 +1,56 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-const TabContext = createContext();
+interface Tab {
+    path: string;
+    title: string;
+    closable?: boolean;
+}
 
-export const useTabs = () => useContext(TabContext);
+interface TabContextType {
+    tabs: Tab[];
+    activeTab: string;
+    addTab: (path: string, title: string) => void;
+    removeTab: (e: React.MouseEvent, path: string) => void;
+    handleTabClick: (path: string) => void;
+}
 
-export const TabProvider = ({ children }) => {
-    const [tabs, setTabs] = useState([]);
+const TabContext = createContext<TabContextType | undefined>(undefined);
+
+export const useTabs = () => {
+    const context = useContext(TabContext);
+    if (!context) {
+        throw new Error('useTabs must be used within a TabProvider');
+    }
+    return context;
+};
+
+interface TabProviderProps {
+    children: ReactNode;
+}
+
+export const TabProvider: React.FC<TabProviderProps> = ({ children }) => {
+    const [tabs, setTabs] = useState<Tab[]>([]);
     const [activeTab, setActiveTab] = useState('/');
     const location = useLocation();
     const navigate = useNavigate();
+
+    const getTitleFromPath = (path: string) => {
+        if (path === '/') return 'Dashboard';
+        if (path === '/gold') return 'Gold Mini';
+        if (path === '/silver') return 'Silver Mini';
+        if (path === '/report') return 'Report';
+        if (path === '/profile') return 'Profile';
+        return 'Page';
+    };
+
+    const addTab = (path: string, title: string) => {
+        if (!tabs.find(tab => tab.path === path)) {
+            setTabs(prev => [...prev, { path, title }]);
+        }
+        navigate(path);
+    };
 
     // Initialize tabs based on current route if empty (optional, but good for refresh)
     useEffect(() => {
@@ -36,23 +77,7 @@ export const TabProvider = ({ children }) => {
         setActiveTab(location.pathname);
     }, [location.pathname]);
 
-    const getTitleFromPath = (path) => {
-        if (path === '/') return 'Dashboard';
-        if (path === '/gold') return 'Gold Mini';
-        if (path === '/silver') return 'Silver Mini';
-        if (path === '/report') return 'Report';
-        if (path === '/profile') return 'Profile';
-        return 'Page';
-    };
-
-    const addTab = (path, title) => {
-        if (!tabs.find(tab => tab.path === path)) {
-            setTabs(prev => [...prev, { path, title }]);
-        }
-        navigate(path);
-    };
-
-    const removeTab = (e, path) => {
+    const removeTab = (e: React.MouseEvent, path: string) => {
         e.stopPropagation();
         const newTabs = tabs.filter(tab => tab.path !== path);
         setTabs(newTabs);
@@ -70,7 +95,7 @@ export const TabProvider = ({ children }) => {
         }
     };
 
-    const handleTabClick = (path) => {
+    const handleTabClick = (path: string) => {
         navigate(path);
     };
 

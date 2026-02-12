@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, FormEvent } from 'react';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../context/AuthContext';
@@ -9,7 +9,11 @@ import { Card } from './ui/Card';
 import { Input } from './ui/Input';
 import { Button } from './ui/Button';
 
-export const TradeForm = ({ commodity }) => {
+interface TradeFormProps {
+    commodity: string;
+}
+
+export const TradeForm: React.FC<TradeFormProps> = ({ commodity }) => {
     const { currentUser } = useAuth();
     const { APP_ID } = useData();
     const [buyAmount, setBuyAmount] = useState('');
@@ -24,7 +28,7 @@ export const TradeForm = ({ commodity }) => {
     const borderColor = isGold ? 'border-yellow-700' : 'border-gray-600';
     const buttonColor = isGold ? 'warning' : 'primary';
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setError('');
 
