@@ -30,7 +30,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         { name: 'Profile', path: '/profile', icon: <User size={20} /> },
     ];
 
-    const handleNavigation = (path, name) => {
+    const handleNavigation = (path: string, name: string) => {
         addTab(path, name);
     };
 
