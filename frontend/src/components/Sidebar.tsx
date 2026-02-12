@@ -23,11 +23,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     const { addTab } = useTabStore();
 
     const navItems = [
-        { name: 'Dashboard', path: '/', icon: <LayoutDashboard size={20} /> },
-        { name: 'Gold Mini', path: '/gold', icon: <Coins size={20} /> },
-        { name: 'Silver Mini', path: '/silver', icon: <TrendingUp size={20} /> },
-        { name: 'Report', path: '/report', icon: <FileText size={20} /> },
-        { name: 'Profile', path: '/profile', icon: <User size={20} /> },
+        { name: 'Dashboard', path: '/', Icon: LayoutDashboard },
+        { name: 'Gold Mini', path: '/gold', Icon: Coins },
+        { name: 'Silver Mini', path: '/silver', Icon: TrendingUp },
+        { name: 'Report', path: '/report', Icon: FileText },
+        { name: 'Profile', path: '/profile', Icon: User },
     ];
 
     const handleNavigation = (path: string, name: string) => {
@@ -44,45 +44,49 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 
     return (
         <aside
-            className={`bg-gray-900 border-r border-gray-800 transition-all duration-300 ease-in-out flex flex-col h-screen fixed left-0 top-0 z-20 ${isOpen ? 'w-64' : 'w-20'
+            className={`bg-[#111827] border-r border-gray-800 transition-all duration-300 ease-in-out flex flex-col h-screen fixed left-0 top-0 z-20 ${isOpen ? 'w-56' : 'w-16'
                 }`}
         >
-            <div className="flex items-center justify-between p-4 border-b border-gray-800 h-16">
+            <div className="flex items-center justify-between p-3 border-b border-gray-800 h-14">
                 {isOpen && (
-                    <span className="text-xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
+                    <span className="text-lg font-bold text-[#F59E0B] flex items-center gap-2">
+                        <span className="text-xl">⚡</span>
                         Trading App
                     </span>
                 )}
                 <button
                     onClick={toggleSidebar}
-                    className="p-2 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors"
                 >
-                    {isOpen ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+                    {isOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
                 </button>
             </div>
 
             <nav className="flex-1 overflow-y-auto py-4">
-                <ul className="space-y-2 px-2">
+                <div className="px-4 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                    {isOpen ? 'Main Menu' : ''}
+                </div>
+                <ul className="space-y-1 px-2">
                     {navItems.map((item) => (
                         <li key={item.path}>
                             <NavLink
                                 to={item.path}
                                 onClick={() => handleNavigation(item.path, item.name)}
                                 className={({ isActive }) =>
-                                    `flex items-center p-3 rounded-lg transition-all duration-200 group ${isActive
-                                        ? 'bg-yellow-600/10 text-yellow-500 border-l-2 border-yellow-500'
-                                        : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                                    `flex items-center p-2 rounded-md transition-all duration-200 group relative ${isActive
+                                        ? 'bg-[#1F2937] text-[#F59E0B] border-l-2 border-[#F59E0B]'
+                                        : 'text-gray-400 hover:bg-[#1F2937] hover:text-gray-200'
                                     }`
                                 }
                             >
                                 <span className={`flex-shrink-0 ${isOpen ? 'mr-3' : 'mx-auto'}`}>
-                                    {item.icon}
+                                    <item.Icon size={18} />
                                 </span>
                                 {isOpen && (
-                                    <span className="font-medium whitespace-nowrap">{item.name}</span>
+                                    <span className="font-medium whitespace-nowrap text-sm">{item.name}</span>
                                 )}
                                 {!isOpen && (
-                                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap">
+                                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-lg border border-gray-700">
                                         {item.name}
                                     </div>
                                 )}
@@ -92,14 +96,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                 </ul>
             </nav>
 
-            <div className="p-4 border-t border-gray-800">
+            <div className="p-3 border-t border-gray-800">
                 <button
                     onClick={handleLogout}
-                    className={`flex items-center w-full p-3 rounded-lg text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors ${!isOpen && 'justify-center'
+                    className={`flex items-center w-full p-2 rounded-lg text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors ${!isOpen && 'justify-center'
                         }`}
                 >
-                    <LogOut size={20} className={isOpen ? 'mr-3' : ''} />
-                    {isOpen && <span>Logout</span>}
+                    <LogOut size={18} className={isOpen ? 'mr-3' : ''} />
+                    {isOpen && <span className="text-sm font-medium">Logout</span>}
                 </button>
             </div>
         </aside>

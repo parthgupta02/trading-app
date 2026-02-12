@@ -107,91 +107,101 @@ export const TradeForm: React.FC<TradeFormProps> = ({ commodity }) => {
     };
 
     return (
-        <Card className={`mb-8 ${borderColor}`}>
-            <h2 className={`text-2xl font-semibold mb-4 ${isGold ? 'text-yellow-400' : 'text-gray-300'}`}>
-                {title}
-            </h2>
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-5 gap-4 align-bottom">
+        <Card className={`mb-8 p-6 ${borderColor} bg-gray-900 shadow-xl border-t-4`}>
+            {/* Header: Title and Date/Time */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <h2 className={`text-xl font-bold ${isGold ? 'text-yellow-400' : 'text-gray-300'}`}>
+                    {title}
+                </h2>
 
-                {/* Date Input */}
-                <div className="col-span-1">
-                    <Input
-                        label="Date"
+                {/* Subtle Date/Time Controls */}
+                <div className="flex space-x-2 bg-gray-800 p-1.5 rounded border border-gray-700">
+                    <input
                         type="date"
                         value={customDate}
                         onChange={(e) => setCustomDate(e.target.value)}
+                        className="bg-transparent text-gray-400 text-sm focus:outline-none focus:text-white"
                     />
-                </div>
-
-                {/* Time Input */}
-                <div className="col-span-1">
-                    <Input
-                        label="Time"
+                    <div className="w-px bg-gray-600 h-4 self-center"></div>
+                    <input
                         type="time"
                         value={customTime}
                         onChange={(e) => setCustomTime(e.target.value)}
+                        className="bg-transparent text-gray-400 text-sm focus:outline-none focus:text-white"
                     />
                 </div>
+            </div>
 
-                {/* Trade Type Dropdown */}
-                <div className="col-span-1">
-                    <label className="block text-sm font-medium text-gray-400 mb-1">
-                        Type
-                    </label>
-                    <select
-                        value={tradeType}
-                        onChange={(e) => setTradeType(e.target.value as 'BUY' | 'SELL')}
-                        className="w-full bg-gray-800 text-white border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        <option value="BUY">BUY</option>
-                        <option value="SELL">SELL</option>
-                    </select>
-                </div>
+            <form onSubmit={handleSubmit} className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
 
-                {/* Rate Input */}
-                <div className="col-span-1">
-                    <Input
-                        label={rateLabel}
-                        type="number"
-                        step="any"
-                        min="0"
-                        placeholder="0.00"
-                        value={rate}
-                        onChange={(e) => setRate(e.target.value)}
-                        className={tradeType === 'BUY' ? "focus:ring-green-500 focus:border-green-500" : "focus:ring-red-500 focus:border-red-500"}
-                    />
-                </div>
+                    {/* Trade Type */}
+                    <div className="sm:col-span-3">
+                        <label className="block text-xs font-medium text-gray-500 uppercase mb-1">
+                            Trade Type
+                        </label>
+                        <select
+                            value={tradeType}
+                            onChange={(e) => setTradeType(e.target.value as 'BUY' | 'SELL')}
+                            className={`w-full h-10 bg-[#1F2937] text-white border border-gray-700 rounded px-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#F59E0B] transition-all cursor-pointer ${tradeType === 'BUY' ? 'focus:border-green-500' : 'focus:border-red-500'}`}
+                        >
+                            <option value="BUY">BUY</option>
+                            <option value="SELL">SELL</option>
+                        </select>
+                    </div>
 
-                {/* Quantity Input */}
-                <div className="col-span-1">
-                    <div className="flex space-x-2">
-                        <div className="flex-grow">
-                            <Input
-                                label="Qty"
-                                type="number"
-                                step="1"
-                                min="1"
-                                placeholder="1"
-                                value={quantity}
-                                onChange={(e) => setQuantity(e.target.value)}
-                            />
-                        </div>
-                        <div className="flex items-end mb-[2px]">
-                            <Button
-                                type="submit"
-                                variant={buttonColor}
-                                loading={loading}
-                                disabled={!rate || !quantity}
-                                className="h-[42px]" // Height match approx
-                            >
-                                {tradeType === 'BUY' ? 'Buy' : 'Sell'}
-                            </Button>
-                        </div>
+                    {/* Quantity */}
+                    <div className="sm:col-span-2">
+                        <label className="block text-xs font-medium text-gray-500 uppercase mb-1">
+                            Quantity
+                        </label>
+                        <Input
+                            type="number"
+                            step="1"
+                            min="1"
+                            value={quantity}
+                            onChange={(e) => setQuantity(e.target.value)}
+                            className="h-10 text-center text-sm bg-[#1F2937] border-gray-700 focus:border-[#F59E0B]"
+                            placeholder="Qty"
+                        />
+                    </div>
+
+                    {/* Rate */}
+                    <div className="sm:col-span-4">
+                        <label className="block text-xs font-medium text-gray-500 uppercase mb-1">
+                            {rateLabel}
+                        </label>
+                        <Input
+                            type="number"
+                            step="any"
+                            min="0"
+                            placeholder="0.00"
+                            value={rate}
+                            onChange={(e) => setRate(e.target.value)}
+                            className={`block w-full h-10 text-xl font-bold text-center bg-[#1F2937] border-2 rounded focus:ring-0 transition-all ${tradeType === 'BUY' ? 'border-gray-700 focus:border-green-500 text-green-400' : 'border-gray-700 focus:border-red-500 text-red-400'}`}
+                        />
+                    </div>
+
+                    {/* Action Button */}
+                    <div className="sm:col-span-3">
+                        <Button
+                            type="submit"
+                            variant={buttonColor} // success or danger
+                            loading={loading}
+                            className="w-full h-10 text-sm font-bold uppercase shadow-sm transform transition active:scale-[0.98]"
+                            disabled={!rate || !quantity}
+                        >
+                            {tradeType === 'BUY' ? 'EXECUTE BUY' : 'EXECUTE SELL'}
+                        </Button>
                     </div>
                 </div>
-
             </form>
-            {error && <p className="text-red-400 text-sm mt-3">{error}</p>}
+
+            {error && (
+                <div className="mt-4 p-3 bg-red-900/30 border border-red-800 rounded text-red-200 text-sm text-center">
+                    {error}
+                </div>
+            )}
         </Card>
     );
 };

@@ -80,47 +80,49 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({ commodity }) => {
 
 
     return (
-        <Card className="border-gray-700">
-            <h2 className="text-2xl font-semibold mb-4 text-white">
+
+        <Card className="">
+            <h2 className="text-2xl font-bold mb-6 text-gray-100 flex items-center gap-2">
+                <span className="w-1 h-6 bg-[#F59E0B] rounded-full inline-block"></span>
                 {commodity.charAt(0).toUpperCase() + commodity.slice(1)} Trade History
             </h2>
-            <div className="overflow-x-auto rounded-lg">
-                <table className="min-w-full divide-y divide-gray-700">
-                    <thead className="bg-gray-700">
+            <div className="overflow-x-auto rounded border border-gray-800">
+                <table className="min-w-full divide-y divide-gray-800">
+                    <thead className="bg-[#1F2937]">
                         <tr>
-                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Week</th>
-                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th>
-                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Qty</th>
-                            <th className="px-3 py-3 text-left text-xs font-medium text-green-400 uppercase tracking-wider">Buy Rate</th>
-                            <th className="px-3 py-3 text-left text-xs font-medium text-red-400 uppercase tracking-wider">Sell Rate</th>
-                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                            <th className="px-3 py-2 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Week</th>
+                            <th className="px-3 py-2 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Date</th>
+                            <th className="px-3 py-2 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Qty</th>
+                            <th className="px-3 py-2 text-left text-[10px] font-bold text-green-500 uppercase tracking-wider">Buy Rate</th>
+                            <th className="px-3 py-2 text-left text-[10px] font-bold text-red-500 uppercase tracking-wider">Sell Rate</th>
+                            <th className="px-3 py-2 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-gray-800 divide-y divide-gray-700">
+                    <tbody className="bg-[#111827] divide-y divide-gray-800">
                         {tradesWithWeek.length === 0 ? (
-                            <tr><td colSpan={6} className="px-3 py-4 text-center text-sm text-gray-400">No trades recorded yet.</td></tr>
+                            <tr><td colSpan={6} className="px-3 py-6 text-center text-xs text-gray-500">No trades recorded yet.</td></tr>
                         ) : (
                             tradesWithWeek.map((trade) => (
-                                <tr key={trade.id} className="hover:bg-gray-700 transition duration-150">
-                                    <td className={`px-3 py-4 whitespace-nowrap text-sm font-medium ${commodity === 'gold' ? 'text-yellow-400' : 'text-gray-300'}`}>
+                                <tr key={trade.id} className="hover:bg-[#1F2937] transition duration-150 group">
+                                    <td className={`px-3 py-2 whitespace-nowrap text-xs font-medium ${commodity === 'gold' ? 'text-[#F59E0B]' : 'text-gray-300'}`}>
                                         {trade.weekNum}
                                     </td>
-                                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-300">
+                                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-300">
                                         {trade.date || formatDate(trade.timestamp)}
                                     </td>
-                                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-300">
+                                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-300">
                                         {trade.quantity || 1}
                                     </td>
-                                    <td className={`px-3 py-4 whitespace-nowrap text-sm font-semibold ${Number(trade.buyAmount) > 0 ? 'text-green-400' : 'text-gray-500'}`}>
-                                        {Number(trade.buyAmount).toFixed(2)}
+                                    <td className={`px-3 py-2 whitespace-nowrap text-xs font-semibold ${Number(trade.buyAmount) > 0 ? 'text-green-500' : 'text-gray-600'}`}>
+                                        {Number(trade.buyAmount) > 0 ? Number(trade.buyAmount).toFixed(2) : '-'}
                                     </td>
-                                    <td className={`px-3 py-4 whitespace-nowrap text-sm font-semibold ${Number(trade.sellAmount) > 0 ? 'text-red-400' : 'text-gray-500'}`}>
-                                        {Number(trade.sellAmount).toFixed(2)}
+                                    <td className={`px-3 py-2 whitespace-nowrap text-xs font-semibold ${Number(trade.sellAmount) > 0 ? 'text-red-500' : 'text-gray-600'}`}>
+                                        {Number(trade.sellAmount) > 0 ? Number(trade.sellAmount).toFixed(2) : '-'}
                                     </td>
-                                    <td className="px-3 py-4 whitespace-nowrap text-sm">
-                                        <div className="flex space-x-2">
-                                            <Button variant="primary" onClick={() => setEditingTrade(trade)} className="px-2 py-1 text-xs">Edit</Button>
-                                            <Button variant="danger" onClick={() => setDeletingTradeId(trade.id as string)} className="px-2 py-1 text-xs">Delete</Button>
+                                    <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                        <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Button variant="primary" onClick={() => setEditingTrade(trade)} className="px-2 py-0.5 text-[10px] h-6 font-medium uppercase">Edit</Button>
+                                            <Button variant="danger" onClick={() => setDeletingTradeId(trade.id as string)} className="px-2 py-0.5 text-[10px] h-6 font-medium uppercase">Del</Button>
                                         </div>
                                     </td>
                                 </tr>

@@ -2,11 +2,11 @@
 import React from 'react';
 
 const variants = {
-    primary: 'bg-blue-600 hover:bg-blue-500 text-white',
-    secondary: 'bg-gray-600 hover:bg-gray-500 text-white',
-    success: 'bg-green-600 hover:bg-green-500 text-white',
-    danger: 'bg-red-600 hover:bg-red-500 text-white',
-    warning: 'bg-yellow-600 hover:bg-yellow-500 text-gray-900', // Matches Gold theme
+    primary: 'bg-[#F59E0B] hover:bg-yellow-600 text-gray-900 font-bold', // Gold, dark text
+    secondary: 'bg-[#1F2937] hover:bg-gray-700 text-gray-200 border border-gray-600', // Dark slate
+    success: 'bg-green-600 hover:bg-green-700 text-white',
+    danger: 'bg-red-600 hover:bg-red-700 text-white',
+    warning: 'bg-yellow-600 hover:bg-yellow-500 text-gray-900',
 };
 
 type ButtonVariant = keyof typeof variants;

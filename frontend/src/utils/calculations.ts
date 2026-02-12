@@ -1,11 +1,20 @@
 import { Trade, TradePair } from '../types';
 
+interface Position {
+    price: number;
+    quantity: number;
+}
+
 interface FifoResult {
     totalPL: number;
     pairs: TradePair[];
     pairCount: number;
     totalProfit: number;
     totalCommission: number;
+    openPositions: {
+        longs: Position[];
+        shorts: Position[];
+    };
 }
 
 /**
@@ -22,8 +31,8 @@ export const calculateFifoPL = (trades: Trade[], commodity: string): FifoResult 
     let totalCommission = 0;
 
     // Queues now hold price AND quantity
-    let longPositions: { price: number, quantity: number }[] = [];
-    let shortPositions: { price: number, quantity: number }[] = [];
+    let longPositions: Position[] = [];
+    let shortPositions: Position[] = [];
 
     // Define constants based on commodity
     // Commission is per 'lot' (unit of quantity)
@@ -70,7 +79,8 @@ export const calculateFifoPL = (trades: Trade[], commodity: string): FifoResult 
                     quantity: matchQty,
                     profit: rawProfit,
                     commission: matchCommission,
-                    net: netProfit
+                    net: netProfit,
+                    timestamp: trade.timestamp // Record closing time
                 });
 
                 // Update quantities
@@ -111,7 +121,8 @@ export const calculateFifoPL = (trades: Trade[], commodity: string): FifoResult 
                     quantity: matchQty,
                     profit: rawProfit,
                     commission: matchCommission,
-                    net: netProfit
+                    net: netProfit,
+                    timestamp: trade.timestamp // Record closing time
                 });
 
                 // Update quantities
@@ -136,6 +147,10 @@ export const calculateFifoPL = (trades: Trade[], commodity: string): FifoResult 
         pairs: pairs,
         pairCount: pairs.length,
         totalProfit: totalProfit,
-        totalCommission: totalCommission
+        totalCommission: totalCommission,
+        openPositions: {
+            longs: longPositions,
+            shorts: shortPositions
+        }
     };
 };

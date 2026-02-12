@@ -77,22 +77,22 @@ export const ReportTable: React.FC = () => {
         totalSilverPL += silverResult.totalPL;
 
         return (
-            <tr key={weekNum} className="hover:bg-gray-700 transition duration-150">
-                <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-yellow-400">Week {weekNum}</td>
+            <tr key={weekNum} className="hover:bg-[#1F2937] transition duration-150">
+                <td className="px-3 py-2 whitespace-nowrap text-xs font-semibold text-[#F59E0B]">Week {weekNum}</td>
                 <td
-                    className={`px-4 py-3 whitespace-nowrap text-sm font-medium cursor-pointer hover:underline ${goldResult.totalPL > 0 ? 'text-green-400' : (goldResult.totalPL < 0 ? 'text-red-400' : 'text-gray-400')}`}
+                    className={`px-3 py-2 whitespace-nowrap text-xs font-medium cursor-pointer hover:underline ${goldResult.totalPL > 0 ? 'text-green-500' : (goldResult.totalPL < 0 ? 'text-red-500' : 'text-gray-400')}`}
                     onClick={() => setSelectedDetail({ commodity: 'gold', week: weekNum, title: `Week ${weekNum} Gold P&L`, data: goldResult })}
                 >
                     {goldResult.totalPL.toFixed(2)}
                 </td>
                 <td
-                    className={`px-4 py-3 whitespace-nowrap text-sm font-medium cursor-pointer hover:underline ${silverResult.totalPL > 0 ? 'text-green-400' : (silverResult.totalPL < 0 ? 'text-red-400' : 'text-gray-400')}`}
+                    className={`px-3 py-2 whitespace-nowrap text-xs font-medium cursor-pointer hover:underline ${silverResult.totalPL > 0 ? 'text-green-500' : (silverResult.totalPL < 0 ? 'text-red-500' : 'text-gray-400')}`}
                     onClick={() => setSelectedDetail({ commodity: 'silver', week: weekNum, title: `Week ${weekNum} Silver P&L`, data: silverResult })}
                 >
                     {silverResult.totalPL.toFixed(2)}
                 </td>
                 <td
-                    className={`px-4 py-3 whitespace-nowrap text-right text-sm font-medium cursor-pointer hover:underline ${totalPL > 0 ? 'text-green-400' : (totalPL < 0 ? 'text-red-400' : 'text-gray-400')}`}
+                    className={`px-3 py-2 whitespace-nowrap text-right text-xs font-medium cursor-pointer hover:underline ${totalPL > 0 ? 'text-green-500' : (totalPL < 0 ? 'text-red-500' : 'text-gray-400')}`}
                     onClick={() => {
                         // For 'all', we combine the results roughly for display or just show both
                         setSelectedDetail({ commodity: 'all', week: weekNum, title: `Week ${weekNum} Combined P&L`, data: { gold: goldResult, silver: silverResult } });
@@ -107,29 +107,32 @@ export const ReportTable: React.FC = () => {
     const grandTotal = totalGoldPL + totalSilverPL;
 
     return (
-        <Card className="border-gray-700">
-            <h2 className="text-2xl font-bold text-green-400 mb-6">Overall Realized Profit & Loss</h2>
-            <div className="overflow-x-auto rounded-lg">
-                <table className="min-w-full divide-y divide-gray-700">
-                    <thead className="bg-gray-700">
+        <Card className="">
+            <h2 className="text-2xl font-bold text-gray-100 mb-6 flex items-center gap-2">
+                <span className="w-1 h-6 bg-[#F59E0B] rounded-full inline-block"></span>
+                Overall Realized Profit & Loss
+            </h2>
+            <div className="overflow-x-auto rounded border border-gray-800">
+                <table className="min-w-full divide-y divide-gray-800">
+                    <thead className="bg-[#1F2937]">
                         <tr>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Item</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">P&L (Gold)</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">P&L (Silver)</th>
-                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-300 uppercase">Total P&L</th>
+                            <th className="px-3 py-2 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Item</th>
+                            <th className="px-3 py-2 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">P&L (Gold)</th>
+                            <th className="px-3 py-2 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">P&L (Silver)</th>
+                            <th className="px-3 py-2 text-right text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total P&L</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-gray-800 divide-y divide-gray-700">
+                    <tbody className="bg-[#111827] divide-y divide-gray-800">
                         {rows}
-                        <tr className="bg-gray-700 font-bold">
-                            <td className="px-4 py-4 whitespace-nowrap text-sm font-extrabold text-white">Total</td>
-                            <td className={`px-4 py-4 whitespace-nowrap text-sm font-extrabold ${totalGoldPL > 0 ? 'text-green-400' : (totalGoldPL < 0 ? 'text-red-400' : 'text-white')}`}>
+                        <tr className="bg-[#1F2937]/50 font-bold border-t-2 border-gray-700">
+                            <td className="px-3 py-3 whitespace-nowrap text-xs font-extrabold text-gray-200">Total</td>
+                            <td className={`px-3 py-3 whitespace-nowrap text-xs font-extrabold ${totalGoldPL > 0 ? 'text-green-500' : (totalGoldPL < 0 ? 'text-red-500' : 'text-gray-400')}`}>
                                 {totalGoldPL.toFixed(2)}
                             </td>
-                            <td className={`px-4 py-4 whitespace-nowrap text-sm font-extrabold ${totalSilverPL > 0 ? 'text-green-400' : (totalSilverPL < 0 ? 'text-red-400' : 'text-white')}`}>
+                            <td className={`px-3 py-3 whitespace-nowrap text-xs font-extrabold ${totalSilverPL > 0 ? 'text-green-500' : (totalSilverPL < 0 ? 'text-red-500' : 'text-gray-400')}`}>
                                 {totalSilverPL.toFixed(2)}
                             </td>
-                            <td className={`px-4 py-4 whitespace-nowrap text-right text-sm font-extrabold ${grandTotal > 0 ? 'text-green-400' : (grandTotal < 0 ? 'text-red-400' : 'text-white')}`}>
+                            <td className={`px-3 py-3 whitespace-nowrap text-right text-xs font-extrabold ${grandTotal > 0 ? 'text-green-500' : (grandTotal < 0 ? 'text-red-500' : 'text-gray-400')}`}>
                                 {grandTotal.toFixed(2)}
                             </td>
                         </tr>

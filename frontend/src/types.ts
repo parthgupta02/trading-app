@@ -18,4 +18,5 @@ export interface TradePair {
     profit: number;
     commission: number;
     net: number;
+    timestamp?: any; // To track when the pair was realized (usually closing trade time)
 }
