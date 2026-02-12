@@ -21,11 +21,13 @@ export const calculateFifoPL = (trades: Trade[], commodity: string): FifoResult 
     let totalProfit = 0;
     let totalCommission = 0;
 
-    let longPositions: { price: number }[] = []; // Queue of buys: { price: number }
-    let shortPositions: { price: number }[] = []; // Queue of sells: { price: number }
+    // Queues now hold price AND quantity
+    let longPositions: { price: number, quantity: number }[] = [];
+    let shortPositions: { price: number, quantity: number }[] = [];
 
     // Define constants based on commodity
-    const commission = 300;
+    // Commission is per 'lot' (unit of quantity)
+    const commissionPerLot = 300;
     const multiplier = (commodity === 'gold') ? 10 : 5; // 10 for Gold (100g/10g), 5 for Silver (5kg/1kg)
 
     // Sort trades by timestamp to ensure correct order
@@ -36,42 +38,94 @@ export const calculateFifoPL = (trades: Trade[], commodity: string): FifoResult 
     });
 
     for (const trade of sortedTrades) {
-        const buyPrice = Number(trade.buyAmount) || 0;   // This is the rate
-        const sellPrice = Number(trade.sellAmount) || 0; // This is the rate
+        const buyPrice = Number(trade.buyAmount) || 0;
+        const sellPrice = Number(trade.sellAmount) || 0;
+        // Default quantity to 1 if missing (legacy data)
+        let tradeQty = trade.quantity !== undefined ? Number(trade.quantity) : 1;
+
+        if (tradeQty <= 0) continue; // Skip invalid quantities
 
         if (buyPrice > 0) {
-            // This is a BUY transaction
-            if (shortPositions.length > 0) {
-                // Close an existing short position
-                const openingShortRate = shortPositions.shift()!.price; // strict null check handled by length check
-                const profit = (openingShortRate - buyPrice) * multiplier;
-                const netProfit = profit - commission;
-                realizedPL += netProfit;
+            // --- BUY TRANSACTION ---
+            // Try to close existing SHORT positions
+            while (tradeQty > 0 && shortPositions.length > 0) {
+                const position = shortPositions[0]; // Peek at the first position
+                const matchQty = Math.min(tradeQty, position.quantity);
 
-                // Store details
-                totalProfit += profit;
-                totalCommission += commission;
-                pairs.push({ buy: buyPrice, sell: openingShortRate, profit: profit, commission: commission, net: netProfit });
-            } else {
-                // Open a new long position
-                longPositions.push({ price: buyPrice });
+                // Calculate P&L for this chunk
+                // Profit = (Sell Price - Buy Price) * Multiplier * Qty
+                // Here, we are buying to cover a short. 
+                // Profit = (Short Price - Current Buy Price) * Multiplier * MatchQty
+                const rawProfit = (position.price - buyPrice) * multiplier * matchQty;
+                const matchCommission = commissionPerLot * matchQty;
+                const netProfit = rawProfit - matchCommission;
+
+                realizedPL += netProfit;
+                totalProfit += rawProfit;
+                totalCommission += matchCommission;
+
+                pairs.push({
+                    buy: buyPrice,
+                    sell: position.price,
+                    quantity: matchQty,
+                    profit: rawProfit,
+                    commission: matchCommission,
+                    net: netProfit
+                });
+
+                // Update quantities
+                tradeQty -= matchQty;
+                position.quantity -= matchQty;
+
+                if (position.quantity <= 0) {
+                    shortPositions.shift(); // Remove exhausted position
+                }
             }
-        } else if (sellPrice > 0) {
-            // This is a SELL transaction
-            if (longPositions.length > 0) {
-                // Close an existing long position
-                const openingLongRate = longPositions.shift()!.price; // strict null check handled by length check
-                const profit = (sellPrice - openingLongRate) * multiplier;
-                const netProfit = profit - commission;
-                realizedPL += netProfit;
 
-                // Store details
-                totalProfit += profit;
-                totalCommission += commission;
-                pairs.push({ buy: openingLongRate, sell: sellPrice, profit: profit, commission: commission, net: netProfit });
-            } else {
-                // Open a new short position
-                shortPositions.push({ price: sellPrice });
+            // If quantity remains, open a new LONG position
+            if (tradeQty > 0) {
+                longPositions.push({ price: buyPrice, quantity: tradeQty });
+            }
+
+        } else if (sellPrice > 0) {
+            // --- SELL TRANSACTION ---
+            // Try to close existing LONG positions
+            while (tradeQty > 0 && longPositions.length > 0) {
+                const position = longPositions[0]; // Peek
+                const matchQty = Math.min(tradeQty, position.quantity);
+
+                // Calculate P&L for this chunk
+                // Profit = (Sell Price - Buy Price) * Multiplier * MatchQty
+                // Here, we are selling to close a long.
+                const rawProfit = (sellPrice - position.price) * multiplier * matchQty;
+                const matchCommission = commissionPerLot * matchQty;
+                const netProfit = rawProfit - matchCommission;
+
+                realizedPL += netProfit;
+                totalProfit += rawProfit;
+                totalCommission += matchCommission;
+
+                pairs.push({
+                    buy: position.price,
+                    sell: sellPrice,
+                    quantity: matchQty,
+                    profit: rawProfit,
+                    commission: matchCommission,
+                    net: netProfit
+                });
+
+                // Update quantities
+                tradeQty -= matchQty;
+                position.quantity -= matchQty;
+
+                if (position.quantity <= 0) {
+                    longPositions.shift(); // Remove exhausted position
+                }
+            }
+
+            // If quantity remains, open a new SHORT position
+            if (tradeQty > 0) {
+                shortPositions.push({ price: sellPrice, quantity: tradeQty });
             }
         }
     }

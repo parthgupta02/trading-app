@@ -63,12 +63,14 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({ commodity }) => {
         // Validation similar to Form
         const buy = parseFloat(editingTrade.buyAmount as string);
         const sell = parseFloat(editingTrade.sellAmount as string);
+        const qty = parseFloat(editingTrade.quantity as unknown as string); // Handle string input
 
         try {
             const ref = doc(db, `artifacts/${APP_ID}/users/${currentUser.uid}/commodity_trades`, editingTrade.id);
             await updateDoc(ref, {
                 buyAmount: isNaN(buy) ? 0 : buy,
-                sellAmount: isNaN(sell) ? 0 : sell
+                sellAmount: isNaN(sell) ? 0 : sell,
+                quantity: isNaN(qty) ? 1 : qty
             });
             setEditingTrade(null);
         } catch (error) {
@@ -88,6 +90,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({ commodity }) => {
                         <tr>
                             <th className="px-3 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Week</th>
                             <th className="px-3 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th>
+                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Qty</th>
                             <th className="px-3 py-3 text-left text-xs font-medium text-green-400 uppercase tracking-wider">Buy Rate</th>
                             <th className="px-3 py-3 text-left text-xs font-medium text-red-400 uppercase tracking-wider">Sell Rate</th>
                             <th className="px-3 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
@@ -95,7 +98,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({ commodity }) => {
                     </thead>
                     <tbody className="bg-gray-800 divide-y divide-gray-700">
                         {tradesWithWeek.length === 0 ? (
-                            <tr><td colSpan={5} className="px-3 py-4 text-center text-sm text-gray-400">No trades recorded yet.</td></tr>
+                            <tr><td colSpan={6} className="px-3 py-4 text-center text-sm text-gray-400">No trades recorded yet.</td></tr>
                         ) : (
                             tradesWithWeek.map((trade) => (
                                 <tr key={trade.id} className="hover:bg-gray-700 transition duration-150">
@@ -104,6 +107,9 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({ commodity }) => {
                                     </td>
                                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-300">
                                         {trade.date || formatDate(trade.timestamp)}
+                                    </td>
+                                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-300">
+                                        {trade.quantity || 1}
                                     </td>
                                     <td className={`px-3 py-4 whitespace-nowrap text-sm font-semibold ${Number(trade.buyAmount) > 0 ? 'text-green-400' : 'text-gray-500'}`}>
                                         {Number(trade.buyAmount).toFixed(2)}
@@ -128,6 +134,14 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({ commodity }) => {
             {editingTrade && (
                 <Modal isOpen={!!editingTrade} onClose={() => setEditingTrade(null)} title={`Edit ${commodity} Rate`}>
                     <form onSubmit={handleUpdate} className="space-y-4">
+                        <Input
+                            label="Qty"
+                            type="number"
+                            step="1"
+                            min="1"
+                            value={(editingTrade.quantity || 1) as unknown as string}
+                            onChange={e => setEditingTrade({ ...editingTrade, quantity: parseInt(e.target.value) })}
+                        />
                         <Input
                             label="Buy Rate"
                             type="number"

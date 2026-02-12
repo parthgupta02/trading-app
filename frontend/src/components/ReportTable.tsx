@@ -176,6 +176,7 @@ const DetailContent: React.FC<DetailContentProps> = ({ name, result }) => (
                 <table className="w-full text-xs text-left">
                     <thead>
                         <tr className="text-gray-500 border-b border-gray-700">
+                            <th className="py-1">Qty</th>
                             <th className="py-1">Buy</th>
                             <th className="py-1">Sell</th>
                             <th className="py-1 text-right">Profit</th>
@@ -185,6 +186,7 @@ const DetailContent: React.FC<DetailContentProps> = ({ name, result }) => (
                     <tbody className="divide-y divide-gray-700">
                         {result.pairs.map((p, i) => (
                             <tr key={i}>
+                                <td className="py-1 text-blue-300">{p.quantity}</td>
                                 <td className="py-1 text-green-400">{p.buy.toFixed(2)}</td>
                                 <td className="py-1 text-red-400">{p.sell.toFixed(2)}</td>
                                 <td className="py-1 text-right">{p.profit.toFixed(2)}</td>
