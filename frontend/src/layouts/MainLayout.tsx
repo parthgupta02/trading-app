@@ -25,6 +25,7 @@ export const MainLayout = () => {
         else if (path === '/silver') title = 'Silver Mini';
         else if (path === '/report') title = 'Report';
         else if (path === '/profile') title = 'Profile';
+        else if (path === '/settings') title = 'Trading Settings';
 
         // Only if we have a known title or it's dynamic
         if (path !== '/login' && path !== '/register') {

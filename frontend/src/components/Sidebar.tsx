@@ -27,7 +27,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         { name: 'Gold Mini', path: '/gold', Icon: Coins },
         { name: 'Silver Mini', path: '/silver', Icon: TrendingUp },
         { name: 'Report', path: '/report', Icon: FileText },
-        { name: 'Trading Settings', path: '/settings', Icon: Settings },
     ];
 
     const handleNavigation = (path: string, name: string) => {
