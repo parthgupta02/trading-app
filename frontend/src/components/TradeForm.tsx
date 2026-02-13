@@ -1,5 +1,5 @@
 
-import React, { useState, FormEvent, useEffect } from 'react';
+import React, { useState, FormEvent, useEffect, useRef } from 'react';
 import { addDoc, collection, Timestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../context/AuthContext';
@@ -26,6 +26,34 @@ export const TradeForm: React.FC<TradeFormProps> = ({ commodity }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    // Refs for keyboard navigation
+    const dateRef = useRef<HTMLInputElement>(null);
+    const timeRef = useRef<HTMLInputElement>(null);
+    const tradeTypeRef = useRef<HTMLSelectElement>(null);
+    const quantityRef = useRef<HTMLInputElement>(null);
+    const rateRef = useRef<HTMLInputElement>(null);
+    const submitRef = useRef<HTMLButtonElement>(null);
+
+    const handleKeyDown = (
+        e: React.KeyboardEvent,
+        nextRef: React.RefObject<any> | null,
+        prevRef: React.RefObject<any> | null
+    ) => {
+        if (e.key === 'Enter') {
+            if (e.shiftKey) {
+                if (prevRef) {
+                    e.preventDefault();
+                    prevRef.current?.focus();
+                }
+            } else {
+                if (nextRef) {
+                    e.preventDefault();
+                    nextRef.current?.focus();
+                }
+            }
+        }
+    };
+
     // Initialize Date/Time on mount
     useEffect(() => {
         const now = new Date();
@@ -37,6 +65,11 @@ export const TradeForm: React.FC<TradeFormProps> = ({ commodity }) => {
 
         setCustomDate(`${y}-${m}-${d}`);
         setCustomTime(`${hh}:${mm}`);
+
+        // Auto-focus Date input on mount
+        setTimeout(() => {
+            dateRef.current?.focus();
+        }, 0);
     }, []);
 
     const isGold = commodity === 'gold';
@@ -98,6 +131,12 @@ export const TradeForm: React.FC<TradeFormProps> = ({ commodity }) => {
             setRate('');
             setQuantity('1');
             // We keep customDate and customTime as they are, for convenience of multiple entries
+
+            // Focus back to Date input
+            setTimeout(() => {
+                dateRef.current?.focus();
+            }, 0);
+
         } catch (err) {
             console.error('Error adding trade:', err);
             setError('Failed to save trade.');
@@ -117,16 +156,20 @@ export const TradeForm: React.FC<TradeFormProps> = ({ commodity }) => {
                 {/* Subtle Date/Time Controls */}
                 <div className="flex space-x-2 bg-gray-800 p-1.5 rounded border border-gray-700">
                     <input
+                        ref={dateRef}
                         type="date"
                         value={customDate}
                         onChange={(e) => setCustomDate(e.target.value)}
+                        onKeyDown={(e) => handleKeyDown(e, timeRef, null)}
                         className="bg-transparent text-gray-400 text-sm focus:outline-none focus:text-white"
                     />
                     <div className="w-px bg-gray-600 h-4 self-center"></div>
                     <input
+                        ref={timeRef}
                         type="time"
                         value={customTime}
                         onChange={(e) => setCustomTime(e.target.value)}
+                        onKeyDown={(e) => handleKeyDown(e, tradeTypeRef, dateRef)}
                         className="bg-transparent text-gray-400 text-sm focus:outline-none focus:text-white"
                     />
                 </div>
@@ -141,8 +184,10 @@ export const TradeForm: React.FC<TradeFormProps> = ({ commodity }) => {
                             Trade Type
                         </label>
                         <select
+                            ref={tradeTypeRef}
                             value={tradeType}
                             onChange={(e) => setTradeType(e.target.value as 'BUY' | 'SELL')}
+                            onKeyDown={(e) => handleKeyDown(e, quantityRef, timeRef)}
                             className={`w-full h-10 bg-[#1F2937] text-white border border-gray-700 rounded px-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#F59E0B] transition-all cursor-pointer ${tradeType === 'BUY' ? 'focus:border-green-500' : 'focus:border-red-500'}`}
                         >
                             <option value="BUY">BUY</option>
@@ -156,11 +201,13 @@ export const TradeForm: React.FC<TradeFormProps> = ({ commodity }) => {
                             Quantity
                         </label>
                         <Input
+                            ref={quantityRef}
                             type="number"
                             step="1"
                             min="1"
                             value={quantity}
                             onChange={(e) => setQuantity(e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(e, rateRef, tradeTypeRef)}
                             className="h-10 text-center text-sm bg-[#1F2937] border-gray-700 focus:border-[#F59E0B]"
                             placeholder="Qty"
                         />
@@ -172,12 +219,14 @@ export const TradeForm: React.FC<TradeFormProps> = ({ commodity }) => {
                             {rateLabel}
                         </label>
                         <Input
+                            ref={rateRef}
                             type="number"
                             step="any"
                             min="0"
                             placeholder="0.00"
                             value={rate}
                             onChange={(e) => setRate(e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(e, submitRef, quantityRef)}
                             className={`block w-full h-10 text-xl font-bold text-center bg-[#1F2937] border-2 rounded focus:ring-0 transition-all ${tradeType === 'BUY' ? 'border-gray-700 focus:border-green-500 text-green-400' : 'border-gray-700 focus:border-red-500 text-red-400'}`}
                         />
                     </div>
@@ -185,9 +234,11 @@ export const TradeForm: React.FC<TradeFormProps> = ({ commodity }) => {
                     {/* Action Button */}
                     <div className="sm:col-span-3">
                         <Button
+                            ref={submitRef}
                             type="submit"
                             variant={buttonColor} // success or danger
                             loading={loading}
+                            onKeyDown={(e) => handleKeyDown(e, null, rateRef)}
                             className="w-full h-10 text-sm font-bold uppercase shadow-sm transform transition active:scale-[0.98]"
                             disabled={!rate || !quantity}
                         >
