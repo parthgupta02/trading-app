@@ -20,3 +20,14 @@ export interface TradePair {
     net: number;
     timestamp?: any; // To track when the pair was realized (usually closing trade time)
 }
+
+export interface TradingSettings {
+    gold: {
+        lotSize: number;
+        commissionPerLot: number;
+    };
+    silver: {
+        lotSize: number;
+        commissionPerLot: number;
+    };
+}

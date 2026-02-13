@@ -1,14 +1,14 @@
 import React from 'react';
 import { TabList } from './TabList';
-import { useAuth } from '../context/AuthContext';
+
 import { Bell } from 'lucide-react';
+import { ProfileDropdown } from './ProfileDropdown';
 
 interface HeaderProps {
     isOpen: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({ isOpen }) => {
-    const { currentUser } = useAuth();
 
     return (
         <header
@@ -30,9 +30,7 @@ export const Header: React.FC<HeaderProps> = ({ isOpen }) => {
                     </button>
 
                     <div className="flex items-center space-x-2 border-l border-gray-800 pl-4">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#F59E0B] to-yellow-300 flex items-center justify-center text-gray-900 font-bold text-sm shadow-lg shadow-yellow-900/20">
-                            {currentUser?.email?.charAt(0).toUpperCase() || 'U'}
-                        </div>
+                        <ProfileDropdown />
                     </div>
                 </div>
             </div>

@@ -1,9 +1,9 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { collection, query, onSnapshot, doc } from "firebase/firestore";
+import { collection, query, onSnapshot, doc, setDoc } from "firebase/firestore";
 import { db } from '../lib/firebase';
 import { useAuth } from './AuthContext';
-import { Trade } from '../types';
+import { Trade, TradingSettings } from '../types';
 
 interface UserProfile {
     fullName: string;
@@ -14,8 +14,10 @@ interface UserProfile {
 interface DataContextType {
     trades: Trade[];
     profile: UserProfile;
+    settings: TradingSettings;
     loadingData: boolean;
     APP_ID: string;
+    updateSettings: (newSettings: TradingSettings) => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -36,6 +38,13 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     const { currentUser } = useAuth();
     const [trades, setTrades] = useState<Trade[]>([]);
     const [profile, setProfile] = useState<UserProfile>({ fullName: '', email: '' });
+
+    // Default settings
+    const [settings, setSettings] = useState<TradingSettings>({
+        gold: { lotSize: 100, commissionPerLot: 300 }, // Defaults per requirement
+        silver: { lotSize: 5, commissionPerLot: 300 }
+    });
+
     const [loadingData, setLoadingData] = useState(false);
 
     const APP_ID = 'default-app-id'; // Critical for matching existing data path
@@ -65,12 +74,19 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
             setLoadingData(false);
         });
 
-        // 2. Fetch Profile (One-time or listener? Listener is better for consistency)
-        // Original app used one-time fetch on login, but listener is "React-way"
+        // 2. Fetch Profile & Settings (Consolidated)
         const profileDocRef = doc(db, 'artifacts', APP_ID, 'user_profiles', currentUser.uid);
         const unsubscribeProfile = onSnapshot(profileDocRef, (docSnap) => {
             if (docSnap.exists()) {
-                setProfile(docSnap.data() as UserProfile);
+                const data = docSnap.data();
+                setProfile(data as UserProfile);
+
+                // Check if settings exist in profile, otherwise keep defaults
+                if (data.tradingSettings) {
+                    setSettings(data.tradingSettings as TradingSettings);
+                }
+            } else {
+                // Profile doesn't exist? Maybe default settings should remain.
             }
         });
 
@@ -80,11 +96,20 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         };
     }, [currentUser]);
 
+    const updateSettings = async (newSettings: TradingSettings) => {
+        if (!currentUser) return;
+        const profileDocRef = doc(db, 'artifacts', APP_ID, 'user_profiles', currentUser.uid);
+        // Merge settings into the profile document
+        await setDoc(profileDocRef, { tradingSettings: newSettings }, { merge: true });
+    };
+
     const value: DataContextType = {
         trades,
         profile,
+        settings,
         loadingData,
-        APP_ID // Expose if needed for direct writes
+        APP_ID,
+        updateSettings
     };
 
     return (

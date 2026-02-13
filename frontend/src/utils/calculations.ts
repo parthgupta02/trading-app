@@ -22,9 +22,11 @@ interface FifoResult {
  * 
  * @param {Trade[]} trades - Array of trade objects
  * @param {string} commodity - 'gold' or 'silver'
+ * @param {number} commissionPerLot - Commission per lot (e.g. 300)
+ * @param {number} lotSize - Lot size (e.g. 100 for Gold, 5 for Silver)
  * @returns {FifoResult}
  */
-export const calculateFifoPL = (trades: Trade[], commodity: string): FifoResult => {
+export const calculateFifoPL = (trades: Trade[], commodity: string, commissionPerLot: number = 300, lotSize: number = 0): FifoResult => {
     let realizedPL = 0;
     let pairs: TradePair[] = [];
     let totalProfit = 0;
@@ -35,9 +37,18 @@ export const calculateFifoPL = (trades: Trade[], commodity: string): FifoResult 
     let shortPositions: Position[] = [];
 
     // Define constants based on commodity
-    // Commission is per 'lot' (unit of quantity)
-    const commissionPerLot = 300;
-    const multiplier = (commodity === 'gold') ? 10 : 5; // 10 for Gold (100g/10g), 5 for Silver (5kg/1kg)
+    // Multiplier Logic:
+    // Gold: Price is per 10g. Multiplier = LotSize(g) / 10. Default LotSize=100 -> 10.
+    // Silver: Price is per 1kg. Multiplier = LotSize(kg) / 1. Default LotSize=5 -> 5.
+
+    let multiplier = 0;
+    if (commodity === 'gold') {
+        const size = lotSize > 0 ? lotSize : 100; // Default 100g if 0 passed
+        multiplier = size / 10;
+    } else {
+        const size = lotSize > 0 ? lotSize : 5; // Default 5kg if 0 passed
+        multiplier = size / 1;
+    }
 
     // Sort trades by timestamp to ensure correct order
     const sortedTrades = [...trades].sort((a, b) => {

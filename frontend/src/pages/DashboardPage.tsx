@@ -1,9 +1,10 @@
+
 import React, { useMemo } from 'react';
 import { useData } from '../context/DataContext';
 import { getMondayOfWeek } from '../utils/dateUtils';
 import { Card } from '../components/ui/Card';
 import { calculateFifoPL } from '../utils/calculations';
-import { Trade } from '../types';
+import { Trade, TradingSettings } from '../types';
 import { ArrowUpRight, ArrowDownRight, TrendingUp, DollarSign, Activity, Layers } from 'lucide-react';
 
 // --- Helper Components ---
@@ -42,9 +43,11 @@ interface CommoditySummaryProps {
     commodity: string;
     trades: Trade[];
     currentMonday: string;
+    commissionPerLot: number;
+    lotSize: number;
 }
 
-const CommoditySummary: React.FC<CommoditySummaryProps> = ({ commodity, trades, currentMonday }) => {
+const CommoditySummary: React.FC<CommoditySummaryProps> = ({ commodity, trades, currentMonday, commissionPerLot, lotSize }) => {
     const isGold = commodity === 'gold';
     const titleColor = isGold ? 'text-[#F59E0B]' : 'text-gray-300';
     const borderColor = isGold ? 'border-[#F59E0B]' : 'border-gray-500';
@@ -83,7 +86,7 @@ const CommoditySummary: React.FC<CommoditySummaryProps> = ({ commodity, trades, 
 
     // Calculate Weekly Realized P&L
     const allCommodityTrades = trades.filter(t => t.commodity === commodity);
-    const fifoResult = calculateFifoPL(allCommodityTrades, commodity);
+    const fifoResult = calculateFifoPL(allCommodityTrades, commodity, commissionPerLot, lotSize);
 
     // Filter pairs that were realized THIS week
     const weeklyPairs = fifoResult.pairs.filter(p => {
@@ -130,8 +133,14 @@ const CommoditySummary: React.FC<CommoditySummaryProps> = ({ commodity, trades, 
     );
 };
 
+import { OpenPositionsCard } from '../components/OpenPositionsCard';
+
+// ... (existing imports)
+
+// ... (StatCard and CommoditySummary components remain unchanged)
+
 export const DashboardPage = () => {
-    const { trades, loadingData } = useData();
+    const { trades, loadingData, settings } = useData();
     const currentMonday = getMondayOfWeek(new Date());
 
     // --- Global Calculations ---
@@ -140,18 +149,12 @@ export const DashboardPage = () => {
         const weeklyTrades = trades.filter(t => getMondayOfWeek(t.timestamp) === currentMonday);
         const totalTradesCount = weeklyTrades.length;
 
-        // 2. Net Open Position (Combine quantity of Gold and Silver? Or just show net count?)
-        // Let's calculate simple net quantity aggregation for simplicity of the card, 
-        // essentially (Total Buy Qty - Total Sell Qty) across all trades? 
-        // No, that mixes kg and grams. Better to show maybe just "Open Lots" count or similar.
-        // Let's do: Total Active Buys - Total Active Sells count from open positions.
-
         let openLongs = 0;
         let openShorts = 0;
 
         // Gold
         const goldTrades = trades.filter(t => t.commodity === 'gold');
-        const goldFifo = calculateFifoPL(goldTrades, 'gold');
+        const goldFifo = calculateFifoPL(goldTrades, 'gold', settings.gold.commissionPerLot, settings.gold.lotSize);
         if (goldFifo.openPositions) {
             openLongs += goldFifo.openPositions.longs.reduce((acc, p) => acc + p.quantity, 0);
             openShorts += goldFifo.openPositions.shorts.reduce((acc, p) => acc + p.quantity, 0);
@@ -159,7 +162,7 @@ export const DashboardPage = () => {
 
         // Silver
         const silverTrades = trades.filter(t => t.commodity === 'silver');
-        const silverFifo = calculateFifoPL(silverTrades, 'silver');
+        const silverFifo = calculateFifoPL(silverTrades, 'silver', settings.silver.commissionPerLot, settings.silver.lotSize);
         if (silverFifo.openPositions) {
             openLongs += silverFifo.openPositions.longs.reduce((acc, p) => acc + p.quantity, 0);
             openShorts += silverFifo.openPositions.shorts.reduce((acc, p) => acc + p.quantity, 0);
@@ -168,7 +171,6 @@ export const DashboardPage = () => {
         const netOpenPos = openLongs - openShorts;
 
         // 3. Realized Profit This Week (Combined)
-        // We need to sum up the pairs realized this week from both commodities
         const goldWeeklyPL = goldFifo.pairs
             .filter(p => {
                 const date = p.timestamp && typeof p.timestamp === 'object' && 'toDate' in p.timestamp ? p.timestamp.toDate() : new Date((p.timestamp as any) || 0);
@@ -188,9 +190,11 @@ export const DashboardPage = () => {
         return {
             totalTradesCount,
             netOpenPos,
-            totalRealizedPL
+            totalRealizedPL,
+            goldPositions: goldFifo.openPositions || { longs: [], shorts: [] },
+            silverPositions: silverFifo.openPositions || { longs: [], shorts: [] }
         };
-    }, [trades, currentMonday]);
+    }, [trades, currentMonday, settings]);
 
 
     if (loadingData) return <div className="text-center text-gray-500 mt-10">Loading dashboard...</div>;
@@ -230,9 +234,28 @@ export const DashboardPage = () => {
 
             {/* Commodity Summaries */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <CommoditySummary commodity="gold" trades={trades} currentMonday={currentMonday} />
-                <CommoditySummary commodity="silver" trades={trades} currentMonday={currentMonday} />
+                <CommoditySummary
+                    commodity="gold"
+                    trades={trades}
+                    currentMonday={currentMonday}
+                    commissionPerLot={settings.gold.commissionPerLot}
+                    lotSize={settings.gold.lotSize}
+                />
+                <CommoditySummary
+                    commodity="silver"
+                    trades={trades}
+                    currentMonday={currentMonday}
+                    commissionPerLot={settings.silver.commissionPerLot}
+                    lotSize={settings.silver.lotSize}
+                />
             </div>
+
+            {/* Open Standing Positions */}
+            <OpenPositionsCard
+                goldPositions={stats.goldPositions}
+                silverPositions={stats.silverPositions}
+                settings={settings}
+            />
 
             {/* Weekly Performance Placeholder */}
             <Card className="p-4">

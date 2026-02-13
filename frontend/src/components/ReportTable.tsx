@@ -26,7 +26,7 @@ interface SelectedDetail {
 }
 
 export const ReportTable: React.FC = () => {
-    const { trades, loadingData } = useData();
+    const { trades, loadingData, settings } = useData();
     const [selectedDetail, setSelectedDetail] = useState<SelectedDetail | null>(null); // { commodity, week, title, data }
 
     if (loadingData) return <div className="text-center p-4">Loading reports...</div>;
@@ -69,8 +69,8 @@ export const ReportTable: React.FC = () => {
         const goldTrades = weeklyData[weekNum].gold;
         const silverTrades = weeklyData[weekNum].silver;
 
-        const goldResult = calculateFifoPL(goldTrades, 'gold');
-        const silverResult = calculateFifoPL(silverTrades, 'silver');
+        const goldResult = calculateFifoPL(goldTrades, 'gold', settings.gold.commissionPerLot, settings.gold.lotSize);
+        const silverResult = calculateFifoPL(silverTrades, 'silver', settings.silver.commissionPerLot, settings.silver.lotSize);
         const totalPL = goldResult.totalPL + silverResult.totalPL;
 
         totalGoldPL += goldResult.totalPL;

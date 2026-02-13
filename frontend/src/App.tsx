@@ -14,6 +14,7 @@ import { GoldPage } from './pages/GoldPage';
 import { SilverPage } from './pages/SilverPage';
 import { ReportPage } from './pages/ReportPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { SettingsPage } from './pages/SettingsPage';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -60,6 +61,7 @@ function App() {
               <Route path="/silver" element={<SilverPage />} />
               <Route path="/report" element={<ReportPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/settings" element={<SettingsPage />} />
             </Route>
 
             {/* Fallback */}
