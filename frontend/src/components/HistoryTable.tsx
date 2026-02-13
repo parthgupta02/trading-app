@@ -4,7 +4,8 @@ import { doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
-import { getMondayOfWeek, formatDate } from '../utils/dateUtils';
+import { getMondayOfWeek, formatDateTime, toInputDateTime } from '../utils/dateUtils';
+import { Timestamp } from 'firebase/firestore';
 import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 import { Modal } from './ui/Modal';
@@ -67,11 +68,25 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({ commodity }) => {
 
         try {
             const ref = doc(db, `artifacts/${APP_ID}/users/${currentUser.uid}/commodity_trades`, editingTrade.id);
-            await updateDoc(ref, {
+
+            const updateData: any = {
                 buyAmount: isNaN(buy) ? 0 : buy,
                 sellAmount: isNaN(sell) ? 0 : sell,
                 quantity: isNaN(qty) ? 1 : qty
-            });
+            };
+
+            if (editingTrade.timestamp) {
+                // If it's a string from the input, convert to Date/Timestamp
+                if (typeof editingTrade.timestamp === 'string') {
+                    updateData.timestamp = Timestamp.fromDate(new Date(editingTrade.timestamp));
+                } else if (editingTrade.timestamp instanceof Date) {
+                    updateData.timestamp = Timestamp.fromDate(editingTrade.timestamp);
+                }
+                // If it's already a Timestamp (and we didn't change it), we might not need to send it again or can send as is.
+                // However, our input renders a string, so if changed, it will likely be a string.
+            }
+
+            await updateDoc(ref, updateData);
             setEditingTrade(null);
         } catch (error) {
             console.error("Update failed", error);
@@ -108,7 +123,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({ commodity }) => {
                                         {trade.weekNum}
                                     </td>
                                     <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-300">
-                                        {trade.date || formatDate(trade.timestamp)}
+                                        {trade.timestamp ? formatDateTime(trade.timestamp) : (trade.date || 'N/A')}
                                     </td>
                                     <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-300">
                                         {trade.quantity || 1}
@@ -157,6 +172,12 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({ commodity }) => {
                             step="any"
                             value={editingTrade.sellAmount as string}
                             onChange={e => setEditingTrade({ ...editingTrade, sellAmount: e.target.value })}
+                        />
+                        <Input
+                            label="Date & Time"
+                            type="datetime-local"
+                            value={toInputDateTime(editingTrade.timestamp)}
+                            onChange={e => setEditingTrade({ ...editingTrade, timestamp: new Date(e.target.value) })}
                         />
                         <div className="flex space-x-2 justify-end mt-4">
                             <Button variant="secondary" onClick={() => setEditingTrade(null)}>Cancel</Button>
