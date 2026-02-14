@@ -233,27 +233,29 @@ export const DashboardPage = () => {
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             {/* Header */}
-            <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
-                    Dashboard
-                    <span className="text-sm px-3 py-1 bg-gray-800 rounded-full text-[#F59E0B] border border-gray-700">
-                        Week {(() => {
+            <div className="flex justify-between items-center bg-[#1F2937] p-4 rounded-lg border border-gray-800 shadow-md">
+                <h1 className="text-2xl font-bold text-gray-100 tracking-tight">Dashboard</h1>
+
+                <div className="flex items-center gap-4">
+                    <span className="text-sm font-semibold text-gray-400 bg-gray-900/50 px-3 py-1.5 rounded-md border border-gray-700 shadow-inner">
+                        Week <span className="text-[#F59E0B] ml-1">{(() => {
                             const uniqueMondays = new Set(trades.map(t => getMondayOfWeek(t.date || t.timestamp)));
                             uniqueMondays.add(activeWeekMonday);
-                            const sortedMondays = Array.from(uniqueMondays).sort(); // Lexicographical sort works for YYYY-MM-DD
+                            const sortedMondays = Array.from(uniqueMondays).sort();
                             return sortedMondays.indexOf(activeWeekMonday) + 1;
-                        })()}
+                        })()}</span>
                     </span>
-                </h1>
-                {hasUnsettledPositions && (
-                    <Button
-                        variant="warning"
-                        onClick={() => setIsSettlementOpen(true)}
-                        className="font-bold shadow-lg shadow-orange-900/20"
-                    >
-                        Settle This Week
-                    </Button>
-                )}
+
+                    {hasUnsettledPositions && (
+                        <Button
+                            variant="warning"
+                            onClick={() => setIsSettlementOpen(true)}
+                            className="font-bold shadow-lg shadow-orange-900/20 text-sm px-4 py-1.5 h-auto"
+                        >
+                            Settle This Week
+                        </Button>
+                    )}
+                </div>
             </div>
 
             {/* Top Stats Row */}
