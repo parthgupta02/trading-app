@@ -5,7 +5,7 @@ import { getMondayOfWeek, getFridayOfWeek } from '../utils/dateUtils';
 import { Card } from '../components/ui/Card';
 import { calculateFifoPL } from '../utils/calculations';
 import { Trade } from '../types';
-import { ArrowUpRight, ArrowDownRight, TrendingUp, DollarSign, Activity, Layers } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, DollarSign, Activity, Layers } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { SettlementModal } from '../components/SettlementModal';
 
@@ -142,8 +142,8 @@ import { OpenPositionsCard } from '../components/OpenPositionsCard';
 // ... (StatCard and CommoditySummary components remain unchanged)
 
 export const DashboardPage = () => {
-    const { trades, loadingData, settings } = useData();
-    const currentMonday = getMondayOfWeek(new Date());
+    const { trades, loadingData, settings, activeWeekMonday } = useData();
+    const currentMonday = activeWeekMonday;
     const settlementDate = getFridayOfWeek(new Date());
     const [isSettlementOpen, setIsSettlementOpen] = useState(false);
 
@@ -234,7 +234,17 @@ export const DashboardPage = () => {
         <div className="space-y-6 animate-in fade-in duration-500">
             {/* Header */}
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-gray-100">Dashboard</h1>
+                <h1 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
+                    Dashboard
+                    <span className="text-sm px-3 py-1 bg-gray-800 rounded-full text-[#F59E0B] border border-gray-700">
+                        Week {(() => {
+                            const uniqueMondays = new Set(trades.map(t => getMondayOfWeek(t.date || t.timestamp)));
+                            uniqueMondays.add(activeWeekMonday);
+                            const sortedMondays = Array.from(uniqueMondays).sort(); // Lexicographical sort works for YYYY-MM-DD
+                            return sortedMondays.indexOf(activeWeekMonday) + 1;
+                        })()}
+                    </span>
+                </h1>
                 {hasUnsettledPositions && (
                     <Button
                         variant="warning"
@@ -247,7 +257,7 @@ export const DashboardPage = () => {
             </div>
 
             {/* Top Stats Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <StatCard
                     title="Net Open Position"
                     value={stats.netOpenPos > 0 ? `+${stats.netOpenPos}` : `${stats.netOpenPos}`}
@@ -262,12 +272,6 @@ export const DashboardPage = () => {
                     trend={stats.totalRealizedPL > 0 ? 'up' : (stats.totalRealizedPL < 0 ? 'down' : 'neutral')}
                     icon={<DollarSign size={20} className="text-green-500" />}
                     color={stats.totalRealizedPL > 0 ? "text-green-500" : (stats.totalRealizedPL < 0 ? "text-red-500" : "text-gray-100")}
-                />
-                <StatCard
-                    title="Unrealized P&L"
-                    value="0.00"
-                    subValue="Calculated Live"
-                    icon={<TrendingUp size={20} className="text-blue-500" />}
                 />
                 <StatCard
                     title="Total Trades (Wk)"

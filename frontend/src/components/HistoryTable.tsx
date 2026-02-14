@@ -17,7 +17,7 @@ interface HistoryTableProps {
 }
 
 export const HistoryTable: React.FC<HistoryTableProps> = ({ commodity }) => {
-    const { trades, APP_ID } = useData();
+    const { trades, APP_ID, activeWeekMonday } = useData();
     const { currentUser } = useAuth();
 
     const [editingTrade, setEditingTrade] = useState<Trade | null>(null);
@@ -33,11 +33,15 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({ commodity }) => {
         });
 
     // Calculate Weeks
-    const weekMap: { [key: string]: number } = {};
-    let currentWeekNumber = 0;
+    // Calculate Global Weeks
+    const uniqueMondays = Array.from(new Set(trades.map(t => getMondayOfWeek(t.date || t.timestamp)))).sort();
+    const globalWeekMap = new Map<string, number>();
+    uniqueMondays.forEach((monday, index) => {
+        globalWeekMap.set(monday, index + 1);
+    });
 
-    // Get current week's Monday
-    const currentWeekMonday = getMondayOfWeek(new Date());
+    // Get current week's Monday from Context (handles settlement switch)
+    const currentWeekMonday = activeWeekMonday;
 
     const tradesWithWeek = filteredTrades
         .filter(trade => {
@@ -46,11 +50,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({ commodity }) => {
         })
         .map(trade => {
             const monday = getMondayOfWeek(trade.date || trade.timestamp);
-            if (weekMap[monday] === undefined) {
-                currentWeekNumber++;
-                weekMap[monday] = currentWeekNumber;
-            }
-            return { ...trade, weekNum: weekMap[monday] };
+            return { ...trade, weekNum: globalWeekMap.get(monday) || 0 };
         });
 
     // Actions

@@ -5,7 +5,7 @@ import { db } from '../lib/firebase';
 import { useAuth } from './AuthContext';
 import { Trade, TradingSettings } from '../types';
 import { calculateFifoPL } from '../utils/calculations';
-import { toStorageDate } from '../utils/dateUtils';
+import { toStorageDate, getMondayOfWeek } from '../utils/dateUtils';
 
 interface UserProfile {
     fullName: string;
@@ -21,6 +21,7 @@ interface DataContextType {
     APP_ID: string;
     updateSettings: (newSettings: TradingSettings) => Promise<void>;
     settleWeek: (settlementDate: string, goldPrice: number, silverPrice: number) => Promise<void>;
+    activeWeekMonday: string;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -227,6 +228,30 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         }
     };
 
+    const [activeWeekMonday, setActiveWeekMonday] = useState(toStorageDate(getMondayOfWeek(new Date())));
+
+    useEffect(() => {
+        // Calculate Active Week
+        // If we have "Settlement Open" trades with date > current week's Friday, it means we moved to next week.
+        const today = new Date();
+        const currentMonday = getMondayOfWeek(today);
+        const nextMonday = new Date(currentMonday);
+        nextMonday.setDate(nextMonday.getDate() + 7);
+        const nextMondayStr = toStorageDate(nextMonday);
+
+        // Check for any trade that belongs to the "Next Week" (specifically settlement opens)
+        const hasNextWeekTrades = trades.some(t => {
+            const tradeDate = t.date || (t.timestamp && typeof t.timestamp === 'object' && 'toDate' in t.timestamp ? toStorageDate(t.timestamp.toDate()) : '');
+            return tradeDate >= nextMondayStr;
+        });
+
+        if (hasNextWeekTrades) {
+            setActiveWeekMonday(nextMondayStr);
+        } else {
+            setActiveWeekMonday(currentMonday);
+        }
+    }, [trades]);
+
     const value: DataContextType = {
         trades,
         profile,
@@ -234,7 +259,8 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         loadingData,
         APP_ID,
         updateSettings,
-        settleWeek
+        settleWeek,
+        activeWeekMonday
     };
 
     return (
