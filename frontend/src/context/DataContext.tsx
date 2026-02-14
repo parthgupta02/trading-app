@@ -1,9 +1,11 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { collection, query, onSnapshot, doc, setDoc } from "firebase/firestore";
+import { collection, query, onSnapshot, doc, setDoc, writeBatch, Timestamp, getDocs, where } from "firebase/firestore";
 import { db } from '../lib/firebase';
 import { useAuth } from './AuthContext';
 import { Trade, TradingSettings } from '../types';
+import { calculateFifoPL } from '../utils/calculations';
+import { toStorageDate } from '../utils/dateUtils';
 
 interface UserProfile {
     fullName: string;
@@ -18,6 +20,7 @@ interface DataContextType {
     loadingData: boolean;
     APP_ID: string;
     updateSettings: (newSettings: TradingSettings) => Promise<void>;
+    settleWeek: (settlementDate: string, goldPrice: number, silverPrice: number) => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -103,13 +106,135 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         await setDoc(profileDocRef, { tradingSettings: newSettings }, { merge: true });
     };
 
+    const settleWeek = async (settlementDate: string, goldPrice: number, silverPrice: number) => {
+        if (!currentUser) return;
+
+        try {
+            // Idempotency Check: Check if this week is already settled
+            const path = `artifacts/${APP_ID}/users/${currentUser.uid}/commodity_trades`;
+            const collectionRef = collection(db, path);
+            const q = query(
+                collectionRef,
+                where("isSettlement", "==", true),
+                where("date", "==", settlementDate),
+                where("settlementType", "==", "close")
+            );
+
+            const existing = await getDocs(q);
+            if (!existing.empty) {
+                throw new Error(`Week ending ${settlementDate} is already settled.`);
+            }
+
+            const batch = writeBatch(db);
+
+            // Set timestamps relative to the settlement Friday
+            const fridayDate = new Date(settlementDate);
+            // Close at end of Friday
+            fridayDate.setHours(23, 59, 0, 0);
+            const closeTimestamp = Timestamp.fromDate(fridayDate);
+
+            // Reopen 1 second later (technically Saturday start, but logically continuous)
+            const openTimestamp = Timestamp.fromDate(new Date(fridayDate.getTime() + 1000));
+
+            // Calculate Next Monday for the "Open" trade date so it appears in next week's history
+            const nextMonday = new Date(fridayDate);
+            nextMonday.setDate(nextMonday.getDate() + 3); // Friday + 3 days = Monday
+            const nextMondayDate = toStorageDate(nextMonday);
+
+            const commodities = ['gold', 'silver'] as const;
+
+            commodities.forEach(commodity => {
+                const price = commodity === 'gold' ? goldPrice : silverPrice;
+                if (price <= 0) return; // Skip if no valid price provided
+
+                // Get config
+                const lotSize = commodity === 'gold' ? settings.gold.lotSize : settings.silver.lotSize;
+                const commission = commodity === 'gold' ? settings.gold.commissionPerLot : settings.silver.commissionPerLot;
+
+                // Calculate current open positions
+                const comTrades = trades.filter(t => t.commodity === commodity);
+                const { openPositions } = calculateFifoPL(comTrades, commodity, commission, lotSize);
+
+                // Sum up quantities
+                const totalLong = openPositions.longs.reduce((sum, p) => sum + p.quantity, 0);
+                const totalShort = openPositions.shorts.reduce((sum, p) => sum + p.quantity, 0);
+
+                // Handle LONG positions
+                if (totalLong > 0) {
+                    // 1. Close Longs (SELL)
+                    const closeDoc = doc(collectionRef);
+                    batch.set(closeDoc, {
+                        commodity,
+                        buyAmount: 0,
+                        sellAmount: price,
+                        quantity: totalLong,
+                        timestamp: closeTimestamp,
+                        date: settlementDate, // Explicitly set to Friday
+                        isSettlement: true,
+                        settlementType: 'close'
+                    });
+
+                    // 2. Re-open Longs (BUY)
+                    const openDoc = doc(collectionRef);
+                    batch.set(openDoc, {
+                        commodity,
+                        buyAmount: price,
+                        sellAmount: 0,
+                        quantity: totalLong,
+                        timestamp: openTimestamp,
+                        date: nextMondayDate, // Set to Next Monday to appear in next week
+                        isSettlement: true,
+                        settlementType: 'open'
+                    });
+                }
+
+                // Handle SHORT positions
+                if (totalShort > 0) {
+                    // 1. Close Shorts (BUY)
+                    const closeDoc = doc(collectionRef);
+                    batch.set(closeDoc, {
+                        commodity,
+                        buyAmount: price,
+                        sellAmount: 0,
+                        quantity: totalShort,
+                        timestamp: closeTimestamp,
+                        date: settlementDate,
+                        isSettlement: true,
+                        settlementType: 'close'
+                    });
+
+                    // 2. Re-open Shorts (SELL)
+                    const openDoc = doc(collectionRef);
+                    batch.set(openDoc, {
+                        commodity,
+                        buyAmount: 0,
+                        sellAmount: price,
+                        quantity: totalShort,
+                        timestamp: openTimestamp,
+                        date: nextMondayDate,
+                        isSettlement: true,
+                        settlementType: 'open'
+                    });
+                }
+            });
+
+            await batch.commit();
+            console.log("Weekly settlement completed successfully.");
+
+        } catch (error) {
+            console.error("Error performing weekly settlement:", error);
+            throw error; // Propagate error for UI handling
+        }
+    };
+
     const value: DataContextType = {
         trades,
         profile,
         settings,
         loadingData,
         APP_ID,
-        updateSettings
+        updateSettings,
+        settleWeek
     };
 
     return (

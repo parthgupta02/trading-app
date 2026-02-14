@@ -36,14 +36,22 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({ commodity }) => {
     const weekMap: { [key: string]: number } = {};
     let currentWeekNumber = 0;
 
-    const tradesWithWeek = filteredTrades.map(trade => {
-        const monday = getMondayOfWeek(trade.timestamp);
-        if (weekMap[monday] === undefined) {
-            currentWeekNumber++;
-            weekMap[monday] = currentWeekNumber;
-        }
-        return { ...trade, weekNum: weekMap[monday] };
-    });
+    // Get current week's Monday
+    const currentWeekMonday = getMondayOfWeek(new Date());
+
+    const tradesWithWeek = filteredTrades
+        .filter(trade => {
+            const tradeMonday = getMondayOfWeek(trade.date || trade.timestamp);
+            return tradeMonday === currentWeekMonday;
+        })
+        .map(trade => {
+            const monday = getMondayOfWeek(trade.date || trade.timestamp);
+            if (weekMap[monday] === undefined) {
+                currentWeekNumber++;
+                weekMap[monday] = currentWeekNumber;
+            }
+            return { ...trade, weekNum: weekMap[monday] };
+        });
 
     // Actions
     const handleDelete = async () => {
@@ -123,7 +131,14 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({ commodity }) => {
                                         {trade.weekNum}
                                     </td>
                                     <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-300">
-                                        {trade.timestamp ? formatDateTime(trade.timestamp) : (trade.date || 'N/A')}
+                                        <div className="flex items-center gap-2">
+                                            {trade.timestamp ? formatDateTime(trade.timestamp) : (trade.date || 'N/A')}
+                                            {trade.isSettlement && (
+                                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-900/50 text-blue-400 border border-blue-800">
+                                                    Settlement
+                                                </span>
+                                            )}
+                                        </div>
                                     </td>
                                     <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-300">
                                         {trade.quantity || 1}

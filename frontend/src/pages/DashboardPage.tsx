@@ -1,11 +1,13 @@
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useData } from '../context/DataContext';
-import { getMondayOfWeek } from '../utils/dateUtils';
+import { getMondayOfWeek, getFridayOfWeek } from '../utils/dateUtils';
 import { Card } from '../components/ui/Card';
 import { calculateFifoPL } from '../utils/calculations';
-import { Trade, TradingSettings } from '../types';
+import { Trade } from '../types';
 import { ArrowUpRight, ArrowDownRight, TrendingUp, DollarSign, Activity, Layers } from 'lucide-react';
+import { Button } from '../components/ui/Button';
+import { SettlementModal } from '../components/SettlementModal';
 
 // --- Helper Components ---
 
@@ -58,7 +60,7 @@ const CommoditySummary: React.FC<CommoditySummaryProps> = ({ commodity, trades, 
     // better yet: aggregated stats for the week.
 
     // Filter for current week
-    const weeklyTrades = trades.filter(t => t.commodity === commodity && getMondayOfWeek(t.timestamp) === currentMonday);
+    const weeklyTrades = trades.filter(t => t.commodity === commodity && getMondayOfWeek(t.date || t.timestamp) === currentMonday);
 
     let totalBuyQty = 0;
     let totalBuyCost = 0;
@@ -142,11 +144,40 @@ import { OpenPositionsCard } from '../components/OpenPositionsCard';
 export const DashboardPage = () => {
     const { trades, loadingData, settings } = useData();
     const currentMonday = getMondayOfWeek(new Date());
+    const settlementDate = getFridayOfWeek(new Date());
+    const [isSettlementOpen, setIsSettlementOpen] = useState(false);
+
+    // Check if settled
+    // Check for unsettled positions (Net != 0 up to this Sunday)
+    const hasUnsettledPositions = useMemo(() => {
+        // Calculate Sunday of the settlement week (Friday + 2 days)
+        const friday = new Date(settlementDate);
+        const sunday = new Date(friday);
+        sunday.setDate(friday.getDate() + 2);
+        const sundayStr = sunday.toISOString().split('T')[0];
+
+        // Filter trades up to Sunday
+        const relevantTrades = trades.filter(t => (t.date || '') <= sundayStr);
+
+        let hasOpen = false;
+        ['gold', 'silver'].forEach(commodity => {
+            const comTrades = relevantTrades.filter(t => t.commodity === commodity);
+            const lotSize = commodity === 'gold' ? settings.gold.lotSize : settings.silver.lotSize;
+            const comm = commodity === 'gold' ? settings.gold.commissionPerLot : settings.silver.commissionPerLot;
+
+            const { openPositions } = calculateFifoPL(comTrades, commodity, comm, lotSize);
+            const total = openPositions.longs.reduce((a, b) => a + b.quantity, 0) +
+                openPositions.shorts.reduce((a, b) => a + b.quantity, 0);
+
+            if (total > 0) hasOpen = true;
+        });
+        return hasOpen;
+    }, [trades, settlementDate, settings]);
 
     // --- Global Calculations ---
     const stats = useMemo(() => {
         // 1. Total Trades This Week
-        const weeklyTrades = trades.filter(t => getMondayOfWeek(t.timestamp) === currentMonday);
+        const weeklyTrades = trades.filter(t => getMondayOfWeek(t.date || t.timestamp) === currentMonday);
         const totalTradesCount = weeklyTrades.length;
 
         let openLongs = 0;
@@ -201,6 +232,20 @@ export const DashboardPage = () => {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
+            {/* Header */}
+            <div className="flex justify-between items-center">
+                <h1 className="text-2xl font-bold text-gray-100">Dashboard</h1>
+                {hasUnsettledPositions && (
+                    <Button
+                        variant="warning"
+                        onClick={() => setIsSettlementOpen(true)}
+                        className="font-bold shadow-lg shadow-orange-900/20"
+                    >
+                        Settle This Week
+                    </Button>
+                )}
+            </div>
+
             {/* Top Stats Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatCard
@@ -264,6 +309,11 @@ export const DashboardPage = () => {
                     <span className="text-gray-600 text-sm">Chart / Detailed Breakdown Area</span>
                 </div>
             </Card>
-        </div>
+
+            <SettlementModal
+                isOpen={isSettlementOpen}
+                onClose={() => setIsSettlementOpen(false)}
+            />
+        </div >
     );
 };

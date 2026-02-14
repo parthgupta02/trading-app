@@ -53,3 +53,48 @@ export const toInputDateTime = (dateInput: DateInput): string => {
     const minutes = String(d.getMinutes()).padStart(2, '0');
     return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
+
+export const isWeekend = (dateInput: DateInput): boolean => {
+    const d = dateInput && typeof dateInput === 'object' && 'toDate' in dateInput ? dateInput.toDate() : new Date(dateInput as any);
+    const day = d.getDay();
+    return day === 0 || day === 6; // 0 is Sunday, 6 is Saturday
+};
+
+export const getFridayOfWeek = (dateInput: DateInput): string => {
+    let d: Date;
+    if (!dateInput) {
+        d = new Date();
+    } else {
+        d = dateInput && typeof dateInput === 'object' && 'toDate' in dateInput ? dateInput.toDate() : new Date(dateInput as any);
+    }
+    d.setHours(0, 0, 0, 0);
+    const day = d.getDay();
+    // Sunday (0) should be -2 (to get back to Friday)
+    // Saturday (6) is 5-6 = -1 (Correct)
+    // Friday (5) is 5-5 = 0 (Correct)
+    // Others (1-4) give upcoming Friday
+    const diff = day === 0 ? -2 : 5 - day;
+    d.setDate(d.getDate() + diff);
+    return toStorageDate(d);
+};
+
+export const isValidTradeDate = (dateInput: DateInput): { valid: boolean; error?: string } => {
+    const d = dateInput && typeof dateInput === 'object' && 'toDate' in dateInput ? dateInput.toDate() : new Date(dateInput as any);
+    const now = new Date();
+
+    // Reset time for date comparison
+    const dStr = toStorageDate(d);
+    const nowStr = toStorageDate(now);
+
+    // Future check
+    if (dStr > nowStr) {
+        return { valid: false, error: 'Future date not allowed.' };
+    }
+
+    // Weekend check
+    if (isWeekend(d)) {
+        return { valid: false, error: 'Market closed on weekends.' };
+    }
+
+    return { valid: true };
+};

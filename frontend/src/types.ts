@@ -8,6 +8,8 @@ export interface Trade {
     timestamp?: Timestamp | { toDate: () => Date } | number | string | Date; // accommodate various formats
     commodity?: string;
     date?: string;
+    isSettlement?: boolean;
+    settlementType?: 'close' | 'open';
     [key: string]: any; // Allow other properties for now until fully typed
 }
 

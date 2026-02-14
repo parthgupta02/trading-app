@@ -7,8 +7,7 @@ import {
     FileText,
     ChevronLeft,
     ChevronRight,
-    LogOut,
-    Settings
+    LogOut
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTabStore } from '../store/tabStore';

@@ -4,6 +4,7 @@ import { addDoc, collection, Timestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
+import { isValidTradeDate } from '../utils/dateUtils';
 import { Card } from './ui/Card';
 import { Input } from './ui/Input';
 import { Button } from './ui/Button';
@@ -102,6 +103,12 @@ export const TradeForm: React.FC<TradeFormProps> = ({ commodity }) => {
             return;
         }
 
+        const dateValidation = isValidTradeDate(customDate);
+        if (!dateValidation.valid) {
+            setError(dateValidation.error || 'Invalid date selected.');
+            return;
+        }
+
         if (!currentUser) {
             setError('You must be logged in.');
             return;
@@ -159,7 +166,19 @@ export const TradeForm: React.FC<TradeFormProps> = ({ commodity }) => {
                         ref={dateRef}
                         type="date"
                         value={customDate}
-                        onChange={(e) => setCustomDate(e.target.value)}
+                        max={new Date().toISOString().split('T')[0]} // Block future dates in picker
+                        onChange={(e) => {
+                            const newDate = e.target.value;
+                            setCustomDate(newDate);
+
+                            // Validate immediately
+                            const { valid, error: dateError } = isValidTradeDate(newDate);
+                            if (!valid) {
+                                setError(dateError || 'Invalid date');
+                            } else {
+                                setError('');
+                            }
+                        }}
                         onKeyDown={(e) => handleKeyDown(e, timeRef, null)}
                         className="bg-transparent text-gray-400 text-sm focus:outline-none focus:text-white"
                     />
@@ -240,7 +259,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({ commodity }) => {
                             loading={loading}
                             onKeyDown={(e) => handleKeyDown(e, null, rateRef)}
                             className="w-full h-10 text-sm font-bold uppercase shadow-sm transform transition active:scale-[0.98]"
-                            disabled={!rate || !quantity}
+                            disabled={!rate || !quantity || !!error}
                         >
                             {tradeType === 'BUY' ? 'EXECUTE BUY' : 'EXECUTE SELL'}
                         </Button>
