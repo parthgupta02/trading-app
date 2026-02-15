@@ -55,6 +55,14 @@ export const TabList: React.FC = () => {
                     key={tab.path}
                     data-active={activeTab === tab.path}
                     onClick={() => handleTabClick(tab.path)}
+                    onAuxClick={(e) => {
+                        if (e.button === 1) { // Middle click
+                            e.preventDefault();
+                            if (tab.title !== 'Dashboard') {
+                                handleRemoveTab(e, tab.path);
+                            }
+                        }
+                    }}
                     className={`
                         group flex items-center space-x-2 px-4 py-1.5 rounded-lg cursor-pointer transition-all duration-200 border text-sm whitespace-nowrap select-none
                         ${activeTab === tab.path
