@@ -5,8 +5,6 @@ import {
     Coins,
     TrendingUp,
     FileText,
-    ChevronLeft,
-    ChevronRight,
     LogOut
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -45,19 +43,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
             className={`bg-[#111827] border-r border-gray-800 transition-all duration-300 ease-in-out flex flex-col h-screen fixed left-0 top-0 z-20 ${isOpen ? 'w-56' : 'w-16'
                 }`}
         >
-            <div className="flex items-center justify-between p-3 border-b border-gray-800 h-14">
+            <div
+                className={`flex items-center h-14 border-b border-gray-800 cursor-pointer hover:bg-gray-800/50 transition-colors ${isOpen ? 'px-4 justify-start' : 'justify-center p-2'}`}
+                onClick={toggleSidebar}
+            >
+                <img src="/logo.png" alt="Logo" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
                 {isOpen && (
-                    <span className="text-lg font-bold text-[#F59E0B] flex items-center gap-2">
-                        <span className="text-xl">⚡</span>
-                        Trading App
-                    </span>
+                    <span className="text-lg font-bold text-[#F59E0B] ml-3 whitespace-nowrap overflow-hidden transition-opacity duration-300">Trading App</span>
                 )}
-                <button
-                    onClick={toggleSidebar}
-                    className="p-1.5 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors"
-                >
-                    {isOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
-                </button>
             </div>
 
             <nav className="flex-1 overflow-y-auto py-4">
