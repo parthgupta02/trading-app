@@ -161,7 +161,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({ commodity }) => {
                 </h2>
 
                 {/* Subtle Date/Time Controls */}
-                <div className="flex space-x-2 bg-gray-800 p-1.5 rounded border border-gray-700">
+                <div className="flex items-center w-full sm:w-auto space-x-2 bg-gray-800 p-1.5 rounded border border-gray-700">
                     <input
                         ref={dateRef}
                         type="date"
@@ -180,16 +180,16 @@ export const TradeForm: React.FC<TradeFormProps> = ({ commodity }) => {
                             }
                         }}
                         onKeyDown={(e) => handleKeyDown(e, timeRef, null)}
-                        className="bg-transparent text-gray-400 text-sm focus:outline-none focus:text-white"
+                        className="bg-transparent text-gray-400 text-sm focus:outline-none focus:text-white flex-1 min-w-0"
                     />
-                    <div className="w-px bg-gray-600 h-4 self-center"></div>
+                    <div className="w-px bg-gray-600 h-4 self-center flex-shrink-0"></div>
                     <input
                         ref={timeRef}
                         type="time"
                         value={customTime}
                         onChange={(e) => setCustomTime(e.target.value)}
                         onKeyDown={(e) => handleKeyDown(e, tradeTypeRef, dateRef)}
-                        className="bg-transparent text-gray-400 text-sm focus:outline-none focus:text-white"
+                        className="bg-transparent text-gray-400 text-sm focus:outline-none focus:text-white flex-1 min-w-0"
                     />
                 </div>
             </div>

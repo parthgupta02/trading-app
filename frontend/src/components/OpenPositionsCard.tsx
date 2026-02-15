@@ -7,8 +7,9 @@ interface Position {
     quantity: number;
 }
 
-goldPositions: { longs: Position[]; shorts: Position[] };
-silverPositions: { longs: Position[]; shorts: Position[] };
+interface OpenPositionsProps {
+    goldPositions: { longs: Position[]; shorts: Position[] };
+    silverPositions: { longs: Position[]; shorts: Position[] };
 }
 
 export const OpenPositionsCard: React.FC<OpenPositionsProps> = ({ goldPositions, silverPositions }) => {
