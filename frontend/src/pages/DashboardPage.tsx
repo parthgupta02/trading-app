@@ -305,7 +305,6 @@ export const DashboardPage = () => {
             <OpenPositionsCard
                 goldPositions={stats.goldPositions}
                 silverPositions={stats.silverPositions}
-                settings={settings}
             />
 
             {/* Weekly Performance Placeholder */}

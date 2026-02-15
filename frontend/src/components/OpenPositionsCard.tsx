@@ -1,27 +1,21 @@
 import React from 'react';
 import { Card } from "./ui/Card";
-import { TradingSettings } from '../types';
+
 
 interface Position {
     price: number;
     quantity: number;
 }
 
-interface OpenPositionsProps {
-    goldPositions: { longs: Position[]; shorts: Position[] };
-    silverPositions: { longs: Position[]; shorts: Position[] };
-    settings: TradingSettings;
+goldPositions: { longs: Position[]; shorts: Position[] };
+silverPositions: { longs: Position[]; shorts: Position[] };
 }
 
-export const OpenPositionsCard: React.FC<OpenPositionsProps> = ({ goldPositions, silverPositions, settings }) => {
+export const OpenPositionsCard: React.FC<OpenPositionsProps> = ({ goldPositions, silverPositions }) => {
 
-    const calculateValue = (price: number, quantity: number, commodity: 'gold' | 'silver') => {
-        const lotSize = commodity === 'gold' ? settings.gold.lotSize : settings.silver.lotSize;
-        const multiplier = commodity === 'gold' ? (lotSize / 10) : (lotSize / 1);
-        return (price * quantity * multiplier).toFixed(2);
-    };
 
-    const renderPositions = (positions: Position[], type: 'Long' | 'Short', commodity: 'gold' | 'silver') => {
+
+    const renderPositions = (positions: Position[], type: 'Long' | 'Short') => {
         if (positions.length === 0) return null;
 
         return (
@@ -39,7 +33,11 @@ export const OpenPositionsCard: React.FC<OpenPositionsProps> = ({ goldPositions,
                                 <span className="text-gray-400">Qty:</span> {pos.quantity}
                             </span>
                             <span>
-                                <span className="text-gray-400">Val:</span> {calculateValue(pos.price, pos.quantity, commodity)}
+                                {type === 'Long' ? (
+                                    <span className="text-green-500 font-bold">BUY</span>
+                                ) : (
+                                    <span className="text-red-500 font-bold">SELL</span>
+                                )}
                             </span>
                         </div>
                     ))}
@@ -62,8 +60,8 @@ export const OpenPositionsCard: React.FC<OpenPositionsProps> = ({ goldPositions,
                         <div className="text-gray-500 text-sm italic">No open positions</div>
                     ) : (
                         <>
-                            {renderPositions(goldPositions.longs, 'Long', 'gold')}
-                            {renderPositions(goldPositions.shorts, 'Short', 'gold')}
+                            {renderPositions(goldPositions.longs, 'Long')}
+                            {renderPositions(goldPositions.shorts, 'Short')}
                         </>
                     )}
                 </div>
@@ -74,8 +72,8 @@ export const OpenPositionsCard: React.FC<OpenPositionsProps> = ({ goldPositions,
                         <div className="text-gray-500 text-sm italic">No open positions</div>
                     ) : (
                         <>
-                            {renderPositions(silverPositions.longs, 'Long', 'silver')}
-                            {renderPositions(silverPositions.shorts, 'Short', 'silver')}
+                            {renderPositions(silverPositions.longs, 'Long')}
+                            {renderPositions(silverPositions.shorts, 'Short')}
                         </>
                     )}
                 </div>
