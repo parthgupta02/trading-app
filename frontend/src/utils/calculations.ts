@@ -75,9 +75,14 @@ export const calculateFifoPL = (trades: Trade[], commodity: string, commissionPe
                 // Calculate P&L for this chunk
                 // Profit = (Sell Price - Buy Price) * Multiplier * Qty
                 // Here, we are buying to cover a short. 
+                // Calculate P&L for this chunk
                 // Profit = (Short Price - Current Buy Price) * Multiplier * MatchQty
                 const rawProfit = (position.price - buyPrice) * multiplier * matchQty;
-                const matchCommission = commissionPerLot * matchQty;
+
+                // If this is a settlement trade, do not charge commission
+                const currentCommission = trade.isSettlement ? 0 : commissionPerLot;
+                const matchCommission = currentCommission * matchQty;
+
                 const netProfit = rawProfit - matchCommission;
 
                 realizedPL += netProfit;
@@ -119,7 +124,11 @@ export const calculateFifoPL = (trades: Trade[], commodity: string, commissionPe
                 // Profit = (Sell Price - Buy Price) * Multiplier * MatchQty
                 // Here, we are selling to close a long.
                 const rawProfit = (sellPrice - position.price) * multiplier * matchQty;
-                const matchCommission = commissionPerLot * matchQty;
+
+                // If this is a settlement trade, do not charge commission
+                const currentCommission = trade.isSettlement ? 0 : commissionPerLot;
+                const matchCommission = currentCommission * matchQty;
+
                 const netProfit = rawProfit - matchCommission;
 
                 realizedPL += netProfit;
