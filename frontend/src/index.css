@@ -4,4 +4,25 @@
   body {
     @apply bg-[#0B1120] text-gray-100 antialiased font-sans;
   }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-700/50 rounded-full hover:bg-gray-600/80 transition-colors;
+  }
+
+  /* Remove ugly number spinners */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 }
