@@ -41,10 +41,10 @@ export const DesktopLayout = () => {
         <div className="flex h-screen bg-[#0B1120] text-gray-100 overflow-hidden font-sans">
             <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
-            <div className={`flex-1 flex flex-col transition-all duration-300 relative ${isSidebarOpen ? 'ml-64' : 'ml-20'}`}>
+            <div className={`flex-1 flex flex-col transition-all duration-300 relative ${isSidebarOpen ? 'ml-64' : 'ml-20'} pt-16`}>
                 <Header isOpen={isSidebarOpen} />
 
-                <main className="flex-1 overflow-y-auto p-6 mt-16">
+                <main className="flex-1 overflow-y-auto p-6">
                     <Outlet />
 
                     <footer className="mt-8 pt-8 border-t border-gray-800 text-xs text-center text-gray-500 pb-4">

@@ -13,6 +13,11 @@ import { DashboardPage } from './pages/DashboardPage';
 import { GoldPage } from './pages/GoldPage';
 import { SilverPage } from './pages/SilverPage';
 import { ReportPage } from './pages/ReportPage';
+import { WeeklyReport } from './components/reports/WeeklyReport';
+import { MonthlyReport } from './components/reports/MonthlyReport';
+import { TradeHistory } from './components/reports/TradeHistory';
+import { InstrumentAnalysis } from './components/reports/InstrumentAnalysis';
+import { WinLossAnalysis } from './components/reports/WinLossAnalysis';
 import { ProfilePage } from './pages/ProfilePage';
 import { SettingsPage } from './pages/SettingsPage';
 
@@ -59,7 +64,14 @@ function App() {
               <Route path="/" element={<DashboardPage />} />
               <Route path="/gold" element={<GoldPage />} />
               <Route path="/silver" element={<SilverPage />} />
-              <Route path="/report" element={<ReportPage />} />
+              <Route path="/report" element={<ReportPage />}>
+                <Route index element={<Navigate to="weekly" replace />} />
+                <Route path="weekly" element={<WeeklyReport />} />
+                <Route path="monthly" element={<MonthlyReport />} />
+                <Route path="history" element={<TradeHistory />} />
+                <Route path="instrument" element={<InstrumentAnalysis />} />
+                <Route path="win-loss" element={<WinLossAnalysis />} />
+              </Route>
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/settings" element={<SettingsPage />} />
             </Route>
