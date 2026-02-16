@@ -24,6 +24,17 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({ commodity }) => {
 
     const [editingTrade, setEditingTrade] = useState<Trade | null>(null);
     const [deletingTradeId, setDeletingTradeId] = useState<string | null>(null);
+    const [selectedWeek, setSelectedWeek] = useState<string>(activeWeekMonday);
+
+    // Sync selectedWeek with activeWeekMonday on mount/change if needed, 
+    // but we might want to let user browse freely. 
+    // Let's set it to activeWeekMonday initially (done in useState default).
+    
+    // Update selected week if active week changes (e.g. after a settlement)
+    React.useEffect(() => {
+        setSelectedWeek(activeWeekMonday);
+    }, [activeWeekMonday]);
+
 
     // Filter and Sort
     const filteredTrades = trades
@@ -42,13 +53,10 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({ commodity }) => {
         globalWeekMap.set(monday, index + 1);
     });
 
-    // Get current week's Monday from Context (handles settlement switch)
-    const currentWeekMonday = activeWeekMonday;
-
     const tradesWithWeek = filteredTrades
         .filter(trade => {
             const tradeMonday = getMondayOfWeek(trade.date || trade.timestamp);
-            return tradeMonday === currentWeekMonday;
+            return tradeMonday === selectedWeek;
         })
         .map(trade => {
             const monday = getMondayOfWeek(trade.date || trade.timestamp);
@@ -107,10 +115,30 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({ commodity }) => {
     return (
 
         <Card className="">
-            <h2 className="text-2xl font-bold mb-6 text-gray-100 flex items-center gap-2">
-                <span className="w-1 h-6 bg-[#F59E0B] rounded-full inline-block"></span>
-                {commodity.charAt(0).toUpperCase() + commodity.slice(1)} Trade History
-            </h2>
+            <div className="flex flex-row justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
+                    <span className="w-1 h-6 bg-[#F59E0B] rounded-full inline-block"></span>
+                    {commodity.charAt(0).toUpperCase() + commodity.slice(1)} Trade History
+                </h2>
+                
+                {/* Week Selector Dropdown */}
+                <select
+                    value={selectedWeek}
+                    onChange={(e) => setSelectedWeek(e.target.value)}
+                    className="bg-gray-800 text-gray-200 text-sm border border-gray-700 rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#F59E0B] cursor-pointer"
+                >
+                    {uniqueMondays.length > 0 ? (
+                        uniqueMondays.map((monday) => (
+                            <option key={monday} value={monday}>
+                                Week {globalWeekMap.get(monday)} ({monday})
+                            </option>
+                        ))
+                    ) : (
+                        <option value={activeWeekMonday}>Current Week</option>
+                    )}
+                </select>
+            </div>
+
             {isMobile ? (
                 <div className="space-y-4">
                     {tradesWithWeek.length === 0 ? (

@@ -25,4 +25,10 @@
     -webkit-appearance: none;
     margin: 0;
   }
+
+  /* Force dark mode for native date/time pickers */
+  input[type="date"],
+  input[type="time"] {
+    color-scheme: dark;
+  }
 }
