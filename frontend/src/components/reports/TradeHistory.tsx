@@ -1,8 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { useReportCalculations } from '../../hooks/useReportCalculations';
 import { Card } from '../ui/Card';
-import { Download } from 'lucide-react';
+import { Download, FileText } from 'lucide-react';
 import { format } from 'date-fns';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export const TradeHistory: React.FC = () => {
     const { processedTrades } = useReportCalculations();
@@ -78,6 +80,66 @@ export const TradeHistory: React.FC = () => {
         document.body.removeChild(link);
     };
 
+    const handleExportPDF = () => {
+        const doc = new jsPDF();
+
+        // Add Title
+        doc.setFontSize(18);
+        doc.text('Trade History Report', 14, 22);
+        doc.setFontSize(11);
+        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
+
+        // Define Columns
+        const tableColumn = ["Details", "Instrument", "Qty", "Buy Price", "Sell Price", "P&L"];
+        const tableRows: any[] = [];
+
+        filteredTrades.forEach(trade => {
+            const buyTime = trade.direction === 'Long' ? formatTradeTime(trade.openTimestamp) : formatTradeTime(trade.closeTimestamp);
+            const sellTime = trade.direction === 'Long' ? formatTradeTime(trade.closeTimestamp) : formatTradeTime(trade.openTimestamp);
+
+            const tradeData = [
+                `BUY: ${buyTime}\nSELL: ${sellTime}`,
+                trade.instrument,
+                trade.quantity,
+                trade.buy.toFixed(2),
+                trade.sell.toFixed(2),
+                formatCurrency(trade.net)
+            ];
+            tableRows.push(tradeData);
+        });
+
+        // Generate Table
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 40,
+            styles: { fontSize: 8, cellPadding: 2 },
+            headStyles: { fillColor: [31, 41, 55], textColor: [255, 255, 255] }, // Dark gray header
+            alternateRowStyles: { fillColor: [245, 245, 245] },
+            columnStyles: {
+                0: { cellWidth: 40 }, // Details column wider
+                5: { fontStyle: 'bold' } // P&L bold
+            },
+            didParseCell: (data) => {
+                // Color P&L column based on value
+                if (data.section === 'body' && data.column.index === 5) {
+                    const rawValue = data.cell.raw;
+                    if (rawValue) {
+                        const pnlValue = parseFloat(rawValue.toString().replace(/[₹,]/g, ''));
+                        if (pnlValue >= 0) {
+                            data.cell.styles.textColor = [34, 197, 94]; // Green
+                        } else {
+                            data.cell.styles.textColor = [239, 68, 68]; // Red
+                        }
+                    }
+                }
+            }
+        });
+
+        // Save PDF
+        doc.save(`trade_history_${new Date().toISOString().slice(0, 10)}.pdf`);
+    };
+
     return (
         <Card title="Trade History" className="bg-[#151F32]">
             {/* Filters */}
@@ -107,12 +169,20 @@ export const TradeHistory: React.FC = () => {
                     </select>
                 </div>
 
-                <button
-                    onClick={handleExportCSV}
-                    className="ml-auto bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded flex items-center gap-2 text-sm font-medium transition-colors"
-                >
-                    <Download size={16} /> Export CSV
-                </button>
+                <div className="ml-auto flex gap-2">
+                    <button
+                        onClick={handleExportPDF}
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded flex items-center gap-2 text-sm font-medium transition-colors"
+                    >
+                        <FileText size={16} /> Export PDF
+                    </button>
+                    <button
+                        onClick={handleExportCSV}
+                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded flex items-center gap-2 text-sm font-medium transition-colors"
+                    >
+                        <Download size={16} /> Export CSV
+                    </button>
+                </div>
             </div>
 
             {/* Table */}
