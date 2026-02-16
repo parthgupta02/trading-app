@@ -91,7 +91,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                 className={`flex items-center h-11 border-b border-gray-800 cursor-pointer hover:bg-gray-800/50 transition-colors ${isOpen ? 'px-3 justify-start' : 'justify-center p-1.5'}`}
                 onClick={toggleSidebar}
             >
-                <img src="/logo.png" alt="Logo" className="w-6 h-6 rounded-full object-cover flex-shrink-0" />
+                <img src="/icon-192.webp" alt="Logo" className="w-6 h-6 rounded-full object-cover flex-shrink-0" />
                 {isOpen && (
                     <span className="text-sm font-bold text-[#F59E0B] ml-2 whitespace-nowrap overflow-hidden transition-opacity duration-300">Trading App</span>
                 )}
