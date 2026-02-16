@@ -21,6 +21,7 @@ export interface TradePair {
     commission: number;
     net: number;
     timestamp?: any; // To track when the pair was realized (usually closing trade time)
+    isSettlement?: boolean;
 }
 
 export interface TradingSettings {

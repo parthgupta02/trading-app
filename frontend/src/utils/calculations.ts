@@ -96,7 +96,9 @@ export const calculateFifoPL = (trades: Trade[], commodity: string, commissionPe
                     profit: rawProfit,
                     commission: matchCommission,
                     net: netProfit,
-                    timestamp: trade.timestamp // Record closing time
+                    net: netProfit,
+                    timestamp: trade.timestamp, // Record closing time
+                    isSettlement: !!trade.isSettlement
                 });
 
                 // Update quantities
@@ -142,7 +144,9 @@ export const calculateFifoPL = (trades: Trade[], commodity: string, commissionPe
                     profit: rawProfit,
                     commission: matchCommission,
                     net: netProfit,
-                    timestamp: trade.timestamp // Record closing time
+                    net: netProfit,
+                    timestamp: trade.timestamp, // Record closing time
+                    isSettlement: !!trade.isSettlement
                 });
 
                 // Update quantities

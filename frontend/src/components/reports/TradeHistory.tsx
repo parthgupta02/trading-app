@@ -131,7 +131,11 @@ export const TradeHistory: React.FC = () => {
                                     </td>
                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-400">
                                         {/* Since Type is redundant/ambiguous for now, we just show a badge or generic text */}
-                                        <span className="px-2 py-0.5 rounded text-xs bg-gray-700 text-gray-300">Closed</span>
+                                        {trade.isSettlement ? (
+                                            <span className="px-2 py-0.5 rounded text-xs bg-blue-900/50 text-blue-400 border border-blue-800">Settlement</span>
+                                        ) : (
+                                            <span className="px-2 py-0.5 rounded text-xs bg-gray-700 text-gray-300">Closed</span>
+                                        )}
                                     </td>
                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-center text-blue-300 font-mono">
                                         {trade.quantity}

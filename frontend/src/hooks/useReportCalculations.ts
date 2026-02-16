@@ -13,6 +13,7 @@ export interface ExtendedTradePair extends TradePair {
     type: string; // 'Long' or 'Short' - inferred? For now 'Trade' or based on assumption. 
     // Actually, we can't easily infer direction from simple Buy/Sell prices without timestamp of entry vs exit.
     // But we can just say 'Round Trip'
+    isSettlement?: boolean;
 }
 
 export interface DailyStats {
@@ -57,7 +58,8 @@ export const useReportCalculations = () => {
             instrument: 'Gold Mini',
             date: p.timestamp ? toStorageDate(p.timestamp) : 'N/A',
             pnl: p.net,
-            type: 'Trade'
+            type: 'Trade',
+            isSettlement: p.isSettlement
         }));
 
         // Calculate FIFO for Silver
@@ -69,7 +71,8 @@ export const useReportCalculations = () => {
             instrument: 'Silver Mini',
             date: p.timestamp ? toStorageDate(p.timestamp) : 'N/A',
             pnl: p.net,
-            type: 'Trade'
+            type: 'Trade',
+            isSettlement: p.isSettlement
         }));
 
         // Combine and sort by date descending
