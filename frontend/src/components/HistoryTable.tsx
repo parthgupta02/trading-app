@@ -29,7 +29,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({ commodity }) => {
     // Sync selectedWeek with activeWeekMonday on mount/change if needed, 
     // but we might want to let user browse freely. 
     // Let's set it to activeWeekMonday initially (done in useState default).
-    
+
     // Update selected week if active week changes (e.g. after a settlement)
     React.useEffect(() => {
         setSelectedWeek(activeWeekMonday);
@@ -115,12 +115,12 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({ commodity }) => {
     return (
 
         <Card className="">
-            <div className="flex flex-row justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
-                    <span className="w-1 h-6 bg-[#F59E0B] rounded-full inline-block"></span>
+            <div className="flex flex-row justify-between items-center mb-4">
+                <h2 className="text-lg font-bold text-gray-100 flex items-center gap-1.5">
+                    <span className="w-0.5 h-5 bg-[#F59E0B] rounded-full inline-block"></span>
                     {commodity.charAt(0).toUpperCase() + commodity.slice(1)} Trade History
                 </h2>
-                
+
                 {/* Week Selector Dropdown */}
                 <select
                     value={selectedWeek}

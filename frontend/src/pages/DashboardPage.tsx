@@ -21,18 +21,18 @@ interface StatCardProps {
 }
 
 const StatCard: React.FC<StatCardProps> = ({ title, value, subValue, icon, trend, color = "text-gray-100" }) => (
-    <Card className="flex flex-col justify-between p-4 h-full border-l-4 border-l-[#F59E0B]">
-        <div className="flex justify-between items-start mb-2">
+    <Card className="flex flex-col justify-between p-3 h-full border-l-4 border-l-[#F59E0B]">
+        <div className="flex justify-between items-start mb-1">
             <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{title}</p>
-                <h3 className={`text-2xl font-bold mt-1 ${color}`}>{value}</h3>
+                <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">{title}</p>
+                <h3 className={`text-lg font-bold mt-0.5 ${color}`}>{value}</h3>
             </div>
-            <div className="p-2 bg-gray-800 rounded-lg text-gray-400">
+            <div className="p-1.5 bg-gray-800 rounded-lg text-gray-400">
                 {icon}
             </div>
         </div>
         {subValue && (
-            <div className="flex items-center text-xs text-gray-400 mt-2">
+            <div className="flex items-center text-[10px] text-gray-400 mt-1">
                 {trend === 'up' && <ArrowUpRight size={14} className="text-green-500 mr-1" />}
                 {trend === 'down' && <ArrowDownRight size={14} className="text-red-500 mr-1" />}
                 <span>{subValue}</span>
@@ -105,29 +105,29 @@ const CommoditySummary: React.FC<CommoditySummaryProps> = ({ commodity, trades, 
 
     return (
         <Card className={`h-full border-t-2 ${borderColor}`}>
-            <div className="flex justify-between items-center mb-4">
-                <h3 className={`text-lg font-bold uppercase ${titleColor}`}>{commodity} Mini</h3>
+            <div className="flex justify-between items-center mb-3">
+                <h3 className={`text-sm font-bold uppercase ${titleColor}`}>{commodity} Mini</h3>
                 <span className={`text-xs px-2 py-1 rounded bg-gray-800 ${netPosition > 0 ? 'text-green-500' : (netPosition < 0 ? 'text-red-500' : 'text-gray-400')}`}>
                     Net: {netPosition > 0 ? '+' : ''}{netPosition}
                 </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-2 gap-3 mb-3">
                 <div>
                     <p className="text-[10px] text-gray-500 uppercase font-bold">Avg Buy</p>
-                    <p className="text-xl font-bold text-green-500">{avgBuy.toFixed(2)}</p>
-                    <p className="text-xs text-gray-500">Qty: {totalBuyQty}</p>
+                    <p className="text-base font-bold text-green-500">{avgBuy.toFixed(2)}</p>
+                    <p className="text-[10px] text-gray-500">Qty: {totalBuyQty}</p>
                 </div>
                 <div className="text-right">
                     <p className="text-[10px] text-gray-500 uppercase font-bold">Avg Sell</p>
-                    <p className="text-xl font-bold text-red-500">{avgSell.toFixed(2)}</p>
-                    <p className="text-xs text-gray-500">Qty: {totalSellQty}</p>
+                    <p className="text-base font-bold text-red-500">{avgSell.toFixed(2)}</p>
+                    <p className="text-[10px] text-gray-500">Qty: {totalSellQty}</p>
                 </div>
             </div>
 
-            <div className="border-t border-gray-800 pt-3 flex justify-between items-center">
-                <span className="text-xs text-gray-400 font-medium">Weekly P&L</span>
-                <span className={`text-lg font-bold ${weeklyRealizedPL > 0 ? 'text-green-500' : (weeklyRealizedPL < 0 ? 'text-red-500' : 'text-gray-400')}`}>
+            <div className="border-t border-gray-800 pt-2 flex justify-between items-center">
+                <span className="text-[10px] text-gray-400 font-medium">Weekly P&L</span>
+                <span className={`text-sm font-bold ${weeklyRealizedPL > 0 ? 'text-green-500' : (weeklyRealizedPL < 0 ? 'text-red-500' : 'text-gray-400')}`}>
                     {weeklyRealizedPL.toFixed(2)}
                 </span>
             </div>
@@ -231,10 +231,10 @@ export const DashboardPage = () => {
     if (loadingData) return <div className="text-center text-gray-500 mt-10">Loading dashboard...</div>;
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-4 animate-in fade-in duration-500">
             {/* Header */}
-            <div className="flex justify-between items-center bg-[#1F2937] p-4 rounded-lg border border-gray-800 shadow-md">
-                <h1 className="text-2xl font-bold text-gray-100 tracking-tight">Dashboard</h1>
+            <div className="flex justify-between items-center bg-[#1F2937] p-3 rounded-lg border border-gray-800 shadow-md">
+                <h1 className="text-lg font-bold text-gray-100 tracking-tight">Dashboard</h1>
 
                 <div className="flex items-center gap-4">
                     <span className="text-sm font-semibold text-gray-400 bg-gray-900/50 px-3 py-1.5 rounded-md border border-gray-700 shadow-inner">
@@ -259,12 +259,12 @@ export const DashboardPage = () => {
             </div>
 
             {/* Top Stats Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <StatCard
                     title="Net Open Position"
                     value={stats.netOpenPos > 0 ? `+${stats.netOpenPos}` : `${stats.netOpenPos}`}
                     subValue={stats.netOpenPos !== 0 ? (stats.netOpenPos > 0 ? "Long Bias" : "Short Bias") : "Flat"}
-                    icon={<Layers size={20} className="text-[#F59E0B]" />}
+                    icon={<Layers size={16} className="text-[#F59E0B]" />}
                     color={stats.netOpenPos > 0 ? "text-green-500" : (stats.netOpenPos < 0 ? "text-red-500" : "text-gray-100")}
                 />
                 <StatCard
@@ -272,19 +272,19 @@ export const DashboardPage = () => {
                     value={stats.totalRealizedPL.toFixed(2)}
                     subValue="This Week"
                     trend={stats.totalRealizedPL > 0 ? 'up' : (stats.totalRealizedPL < 0 ? 'down' : 'neutral')}
-                    icon={<DollarSign size={20} className="text-green-500" />}
+                    icon={<DollarSign size={16} className="text-green-500" />}
                     color={stats.totalRealizedPL > 0 ? "text-green-500" : (stats.totalRealizedPL < 0 ? "text-red-500" : "text-gray-100")}
                 />
                 <StatCard
                     title="Total Trades (Wk)"
                     value={stats.totalTradesCount.toString()}
                     subValue="Volume"
-                    icon={<Activity size={20} className="text-purple-500" />}
+                    icon={<Activity size={16} className="text-purple-500" />}
                 />
             </div>
 
             {/* Commodity Summaries */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <CommoditySummary
                     commodity="gold"
                     trades={trades}
@@ -308,9 +308,9 @@ export const DashboardPage = () => {
             />
 
             {/* Weekly Performance Placeholder */}
-            <Card className="p-4">
-                <h3 className="text-lg font-bold text-gray-200 mb-4">Weekly Performance</h3>
-                <div className="h-32 flex items-center justify-center border-2 border-dashed border-gray-800 rounded-lg bg-gray-900/50">
+            <Card className="p-3">
+                <h3 className="text-sm font-bold text-gray-200 mb-3">Weekly Performance</h3>
+                <div className="h-24 flex items-center justify-center border-2 border-dashed border-gray-800 rounded-lg bg-gray-900/50">
                     <span className="text-gray-600 text-sm">Chart / Detailed Breakdown Area</span>
                 </div>
             </Card>

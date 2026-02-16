@@ -4,7 +4,7 @@ import { HistoryTable } from '../components/HistoryTable';
 
 export const GoldPage = () => {
     return (
-        <div className="space-y-8">
+        <div className="space-y-4">
             <TradeForm commodity="gold" />
             <HistoryTable commodity="gold" />
         </div>

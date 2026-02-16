@@ -64,7 +64,7 @@ export const TabList: React.FC = () => {
                         }
                     }}
                     className={`
-                        group flex items-center space-x-2 px-4 py-1.5 rounded-lg cursor-pointer transition-all duration-200 border text-sm whitespace-nowrap select-none
+                        group flex items-center space-x-1.5 px-3 py-1 rounded-lg cursor-pointer transition-all duration-200 border text-xs whitespace-nowrap select-none
                         ${activeTab === tab.path
                             ? 'bg-yellow-500/10 border-yellow-500/50 text-yellow-500 shadow-sm shadow-yellow-500/20'
                             : 'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-750 hover:text-gray-200 hover:border-gray-600'
@@ -78,7 +78,7 @@ export const TabList: React.FC = () => {
                             className={`p-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${activeTab === tab.path ? 'hover:bg-yellow-500/20 text-yellow-500' : 'hover:bg-gray-600 text-gray-400'
                                 }`}
                         >
-                            <X size={14} />
+                            <X size={12} />
                         </button>
                     )}
                 </div>

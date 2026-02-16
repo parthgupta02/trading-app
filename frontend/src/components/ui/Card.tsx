@@ -9,9 +9,9 @@ interface CardProps {
 
 export const Card: React.FC<CardProps> = ({ children, className = '', title }) => {
     return (
-        <div className={`bg-[#151F32] p-4 rounded-lg shadow-xl border border-gray-800 ${className}`}>
-            {title && <h2 className="text-lg font-bold text-gray-100 mb-4 flex items-center gap-2">
-                <span className="w-1 h-5 bg-[#F59E0B] rounded-full inline-block"></span>
+        <div className={`bg-[#151F32] p-3 rounded-lg shadow-xl border border-gray-800 ${className}`}>
+            {title && <h2 className="text-sm font-bold text-gray-100 mb-2 flex items-center gap-1.5">
+                <span className="w-0.5 h-4 bg-[#F59E0B] rounded-full inline-block"></span>
                 {title}
             </h2>}
             {children}

@@ -21,7 +21,7 @@ export const OpenPositionsCard: React.FC<OpenPositionsProps> = ({ goldPositions,
 
         return (
             <div className="mb-4">
-                <h4 className={`text-sm font-semibold mb-2 ${type === 'Long' ? 'text-green-500' : 'text-red-500'}`}>
+                <h4 className={`text-xs font-semibold mb-1.5 ${type === 'Long' ? 'text-green-500' : 'text-red-500'}`}>
                     {type} Positions
                 </h4>
                 <div className="space-y-2">
@@ -52,11 +52,11 @@ export const OpenPositionsCard: React.FC<OpenPositionsProps> = ({ goldPositions,
 
     return (
         <Card title="Open Standing Positions" className="bg-[#1a1d24] border-gray-800">
-            <div className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="pt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
 
                 {/* Gold Column */}
                 <div>
-                    <h3 className="text-[#F59E0B] font-bold mb-3 border-b border-[#F59E0B]/30 pb-1">Gold Mini</h3>
+                    <h3 className="text-[#F59E0B] font-bold text-sm mb-2 border-b border-[#F59E0B]/30 pb-1">Gold Mini</h3>
                     {!hasGoldPositions ? (
                         <div className="text-gray-500 text-sm italic">No open positions</div>
                     ) : (
@@ -68,7 +68,7 @@ export const OpenPositionsCard: React.FC<OpenPositionsProps> = ({ goldPositions,
                 </div>
                 {/* Silver Column */}
                 <div>
-                    <h3 className="text-gray-300 font-bold mb-3 border-b border-gray-500/30 pb-1">Silver Mini</h3>
+                    <h3 className="text-gray-300 font-bold text-sm mb-2 border-b border-gray-500/30 pb-1">Silver Mini</h3>
                     {!hasSilverPositions ? (
                         <div className="text-gray-500 text-sm italic">No open positions</div>
                     ) : (

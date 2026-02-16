@@ -26,7 +26,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
     onClick,
     ...props
 }, ref) => {
-    const baseStyles = 'py-2 px-4 font-bold rounded-lg shadow-md transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center';
+    const baseStyles = 'py-1.5 px-3 text-sm font-bold rounded-lg shadow-md transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center';
     const variantStyles = variants[variant] || variants.primary;
 
     return (

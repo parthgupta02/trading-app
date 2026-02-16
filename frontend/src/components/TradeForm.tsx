@@ -153,10 +153,10 @@ export const TradeForm: React.FC<TradeFormProps> = ({ commodity }) => {
     };
 
     return (
-        <Card className={`mb-8 p-6 ${borderColor} bg-gray-900 shadow-xl border-t-4`}>
+        <Card className={`mb-4 p-4 ${borderColor} bg-gray-900 shadow-xl border-t-4`}>
             {/* Header: Title and Date/Time */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                <h2 className={`text-xl font-bold ${isGold ? 'text-yellow-400' : 'text-gray-300'}`}>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+                <h2 className={`text-base font-bold ${isGold ? 'text-yellow-400' : 'text-gray-300'}`}>
                     {title}
                 </h2>
 
@@ -194,8 +194,8 @@ export const TradeForm: React.FC<TradeFormProps> = ({ commodity }) => {
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+            <form onSubmit={handleSubmit} className="space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end">
 
                     {/* Trade Type */}
                     <div className="sm:col-span-3">
@@ -207,7 +207,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({ commodity }) => {
                             value={tradeType}
                             onChange={(e) => setTradeType(e.target.value as 'BUY' | 'SELL')}
                             onKeyDown={(e) => handleKeyDown(e, quantityRef, timeRef)}
-                            className={`w-full h-10 bg-[#1F2937] text-white border border-gray-700 rounded px-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#F59E0B] transition-all cursor-pointer ${tradeType === 'BUY' ? 'focus:border-green-500' : 'focus:border-red-500'}`}
+                            className={`w-full h-8 bg-[#1F2937] text-white border border-gray-700 rounded px-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#F59E0B] transition-all cursor-pointer ${tradeType === 'BUY' ? 'focus:border-green-500' : 'focus:border-red-500'}`}
                         >
                             <option value="BUY">BUY</option>
                             <option value="SELL">SELL</option>
@@ -227,7 +227,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({ commodity }) => {
                             value={quantity}
                             onChange={(e) => setQuantity(e.target.value)}
                             onKeyDown={(e) => handleKeyDown(e, rateRef, tradeTypeRef)}
-                            className="h-10 text-center text-sm bg-[#1F2937] border-gray-700 focus:border-[#F59E0B]"
+                            className="h-8 text-center text-xs bg-[#1F2937] border-gray-700 focus:border-[#F59E0B]"
                             placeholder="Qty"
                         />
                     </div>
@@ -246,7 +246,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({ commodity }) => {
                             value={rate}
                             onChange={(e) => setRate(e.target.value)}
                             onKeyDown={(e) => handleKeyDown(e, submitRef, quantityRef)}
-                            className={`block w-full h-10 text-xl font-bold text-center bg-[#1F2937] border-2 rounded focus:ring-0 transition-all ${tradeType === 'BUY' ? 'border-gray-700 focus:border-green-500 text-green-400' : 'border-gray-700 focus:border-red-500 text-red-400'}`}
+                            className={`block w-full h-8 text-base font-bold text-center bg-[#1F2937] border-2 rounded focus:ring-0 transition-all ${tradeType === 'BUY' ? 'border-gray-700 focus:border-green-500 text-green-400' : 'border-gray-700 focus:border-red-500 text-red-400'}`}
                         />
                     </div>
 
@@ -258,7 +258,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({ commodity }) => {
                             variant={buttonColor} // success or danger
                             loading={loading}
                             onKeyDown={(e) => handleKeyDown(e, null, rateRef)}
-                            className="w-full h-10 text-sm font-bold uppercase shadow-sm transform transition active:scale-[0.98]"
+                            className="w-full h-8 text-xs font-bold uppercase shadow-sm transform transition active:scale-[0.98]"
                             disabled={!rate || !quantity || !!error}
                         >
                             {tradeType === 'BUY' ? 'EXECUTE BUY' : 'EXECUTE SELL'}
@@ -268,7 +268,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({ commodity }) => {
             </form>
 
             {error && (
-                <div className="mt-4 p-3 bg-red-900/30 border border-red-800 rounded text-red-200 text-sm text-center">
+                <div className="mt-3 p-2 bg-red-900/30 border border-red-800 rounded text-red-200 text-xs text-center">
                     {error}
                 </div>
             )}
