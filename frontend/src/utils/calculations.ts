@@ -3,6 +3,7 @@ import { Trade, TradePair } from '../types';
 interface Position {
     price: number;
     quantity: number;
+    timestamp?: any;
 }
 
 interface FifoResult {
@@ -96,9 +97,11 @@ export const calculateFifoPL = (trades: Trade[], commodity: string, commissionPe
                     profit: rawProfit,
                     commission: matchCommission,
                     net: netProfit,
-                    net: netProfit,
                     timestamp: trade.timestamp, // Record closing time
-                    isSettlement: !!trade.isSettlement
+                    openTimestamp: position.timestamp, // Short open time
+                    closeTimestamp: trade.timestamp, // Short close (cover) time
+                    isSettlement: !!trade.isSettlement,
+                    direction: 'Short'
                 });
 
                 // Update quantities
@@ -112,7 +115,7 @@ export const calculateFifoPL = (trades: Trade[], commodity: string, commissionPe
 
             // If quantity remains, open a new LONG position
             if (tradeQty > 0) {
-                longPositions.push({ price: buyPrice, quantity: tradeQty });
+                longPositions.push({ price: buyPrice, quantity: tradeQty, timestamp: trade.timestamp });
             }
 
         } else if (sellPrice > 0) {
@@ -144,9 +147,11 @@ export const calculateFifoPL = (trades: Trade[], commodity: string, commissionPe
                     profit: rawProfit,
                     commission: matchCommission,
                     net: netProfit,
-                    net: netProfit,
                     timestamp: trade.timestamp, // Record closing time
-                    isSettlement: !!trade.isSettlement
+                    openTimestamp: position.timestamp, // Long open time
+                    closeTimestamp: trade.timestamp, // Long close time
+                    isSettlement: !!trade.isSettlement,
+                    direction: 'Long'
                 });
 
                 // Update quantities
@@ -160,7 +165,7 @@ export const calculateFifoPL = (trades: Trade[], commodity: string, commissionPe
 
             // If quantity remains, open a new SHORT position
             if (tradeQty > 0) {
-                shortPositions.push({ price: sellPrice, quantity: tradeQty });
+                shortPositions.push({ price: sellPrice, quantity: tradeQty, timestamp: trade.timestamp });
             }
         }
     }

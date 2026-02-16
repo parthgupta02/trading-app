@@ -21,7 +21,10 @@ export interface TradePair {
     commission: number;
     net: number;
     timestamp?: any; // To track when the pair was realized (usually closing trade time)
+    openTimestamp?: any; // The timestamp of the opening trade (Buy for Long, Sell for Short)
+    closeTimestamp?: any; // The timestamp of the closing trade (Sell for Long, Buy for Short)
     isSettlement?: boolean;
+    direction?: 'Long' | 'Short';
 }
 
 export interface TradingSettings {

@@ -1,6 +1,6 @@
 
 import { Outlet } from 'react-router-dom';
-import { Card } from '../components/ui/Card';
+
 
 export const ReportPage = () => {
     return (

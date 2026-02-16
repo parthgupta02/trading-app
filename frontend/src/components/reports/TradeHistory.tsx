@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useReportCalculations } from '../../hooks/useReportCalculations';
 import { Card } from '../ui/Card';
 import { Download } from 'lucide-react';
+import { format } from 'date-fns';
 
 export const TradeHistory: React.FC = () => {
     const { processedTrades } = useReportCalculations();
@@ -36,15 +37,29 @@ export const TradeHistory: React.FC = () => {
         return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(val);
     };
 
+    const formatTradeTime = (timestamp: any) => {
+        if (!timestamp) return '-';
+        // Handle Firestore Timestamp
+        if (timestamp && typeof timestamp === 'object' && 'toDate' in timestamp) {
+            return format(timestamp.toDate(), 'dd MMM HH:mm');
+        }
+        // Handle JS Date or string
+        const d = new Date(timestamp);
+        if (isNaN(d.getTime())) return '-';
+        return format(d, 'dd MMM HH:mm');
+    };
+
     const handleExportCSV = () => {
-        const headers = ["Date", "Instrument", "Qty", "Buy Price", "Sell Price", "P&L"];
+        const headers = ["Date", "Instrument", "Qty", "Buy Price", "Sell Price", "P&L", "Open Time", "Close Time"];
         const rows = filteredTrades.map(t => [
             t.date,
             t.instrument,
             t.quantity,
             t.buy,
             t.sell,
-            t.net
+            t.net,
+            t.openTimestamp ? new Date(t.openTimestamp.toDate ? t.openTimestamp.toDate() : t.openTimestamp).toLocaleString() : '',
+            t.closeTimestamp ? new Date(t.closeTimestamp.toDate ? t.closeTimestamp.toDate() : t.closeTimestamp).toLocaleString() : ''
         ]);
 
         const csvContent = [
@@ -105,7 +120,7 @@ export const TradeHistory: React.FC = () => {
                 <table className="min-w-full divide-y divide-gray-800">
                     <thead className="bg-[#1F2937]">
                         <tr>
-                            <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
+                            <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Trade Details</th>
                             <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Instrument</th>
                             <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Type</th>
                             <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Qty</th>
@@ -122,29 +137,43 @@ export const TradeHistory: React.FC = () => {
                         ) : (
                             filteredTrades.map((trade) => (
                                 <tr key={trade.id} className="hover:bg-[#1F2937] transition duration-150">
-                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-300">
-                                        {trade.date}
+                                    <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-400">
+                                        <div className="flex flex-col gap-0.5">
+                                            <div className="flex items-center gap-1">
+                                                <span className="text-green-500/70 text-[10px] w-8">BUY:</span>
+                                                <span className="text-gray-300">
+                                                    {trade.direction === 'Long' ? formatTradeTime(trade.openTimestamp) : formatTradeTime(trade.closeTimestamp)}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <span className="text-red-500/70 text-[10px] w-8">SELL:</span>
+                                                <span className="text-gray-300">
+                                                    {trade.direction === 'Long' ? formatTradeTime(trade.closeTimestamp) : formatTradeTime(trade.openTimestamp)}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-200">
                                         <span className={`inline-block w-2 h-2 rounded-full mr-2 ${trade.instrument.includes('Gold') ? 'bg-yellow-500' : 'bg-gray-400'}`}></span>
                                         {trade.instrument}
                                     </td>
                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-400">
-                                        {/* Since Type is redundant/ambiguous for now, we just show a badge or generic text */}
-                                        {trade.isSettlement ? (
-                                            <span className="px-2 py-0.5 rounded text-xs bg-blue-900/50 text-blue-400 border border-blue-800">Settlement</span>
-                                        ) : (
-                                            <span className="px-2 py-0.5 rounded text-xs bg-gray-700 text-gray-300">Closed</span>
-                                        )}
+                                        <span className="px-2 py-0.5 rounded text-xs bg-gray-700 text-gray-300">Closed</span>
                                     </td>
                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-center text-blue-300 font-mono">
                                         {trade.quantity}
                                     </td>
                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-400 font-mono">
                                         {trade.buy.toFixed(2)}
+                                        {trade.isSettlement && trade.direction === 'Short' && (
+                                            <span className="ml-1 text-[10px] font-bold text-blue-400">S</span>
+                                        )}
                                     </td>
                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-400 font-mono">
                                         {trade.sell.toFixed(2)}
+                                        {trade.isSettlement && trade.direction === 'Long' && (
+                                            <span className="ml-1 text-[10px] font-bold text-blue-400">S</span>
+                                        )}
                                     </td>
                                     <td className={`px-4 py-3 whitespace-nowrap text-sm text-right font-bold font-mono ${trade.net >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                                         {trade.net > 0 ? '+' : ''}{formatCurrency(trade.net)}
@@ -158,3 +187,4 @@ export const TradeHistory: React.FC = () => {
         </Card>
     );
 };
+

@@ -14,6 +14,9 @@ export interface ExtendedTradePair extends TradePair {
     // Actually, we can't easily infer direction from simple Buy/Sell prices without timestamp of entry vs exit.
     // But we can just say 'Round Trip'
     isSettlement?: boolean;
+    direction?: 'Long' | 'Short';
+    openTimestamp?: any;
+    closeTimestamp?: any;
 }
 
 export interface DailyStats {
@@ -59,7 +62,10 @@ export const useReportCalculations = () => {
             date: p.timestamp ? toStorageDate(p.timestamp) : 'N/A',
             pnl: p.net,
             type: 'Trade',
-            isSettlement: p.isSettlement
+            isSettlement: p.isSettlement,
+            direction: p.direction,
+            openTimestamp: p.openTimestamp,
+            closeTimestamp: p.closeTimestamp
         }));
 
         // Calculate FIFO for Silver
@@ -72,12 +78,23 @@ export const useReportCalculations = () => {
             date: p.timestamp ? toStorageDate(p.timestamp) : 'N/A',
             pnl: p.net,
             type: 'Trade',
-            isSettlement: p.isSettlement
+            isSettlement: p.isSettlement,
+            direction: p.direction,
+            openTimestamp: p.openTimestamp,
+            closeTimestamp: p.closeTimestamp
         }));
 
-        // Combine and sort by date descending
+        // Combine and sort by closeTimestamp descending (Newest first)
         return [...goldPairs, ...silverPairs].sort((a, b) => {
-            return new Date(b.date).getTime() - new Date(a.date).getTime();
+            const timeA = a.closeTimestamp && typeof a.closeTimestamp === 'object' && 'toDate' in a.closeTimestamp
+                ? a.closeTimestamp.toDate().getTime()
+                : new Date(a.closeTimestamp || 0).getTime();
+
+            const timeB = b.closeTimestamp && typeof b.closeTimestamp === 'object' && 'toDate' in b.closeTimestamp
+                ? b.closeTimestamp.toDate().getTime()
+                : new Date(b.closeTimestamp || 0).getTime();
+
+            return timeB - timeA;
         });
 
     }, [trades, settings]);
