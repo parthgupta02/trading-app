@@ -10,7 +10,8 @@ import {
     ChevronRight,
     BarChart,
     History,
-    PieChart
+    PieChart,
+    CreditCard
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTabStore } from '../store/tabStore';
@@ -49,6 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                 { name: 'Win/Loss Analysis', path: '/report/win-loss', Icon: TrendingUp },
             ]
         },
+        { name: 'Subscription', path: '/subscription', Icon: CreditCard },
     ];
 
     const handleNavigation = (item: NavItem) => {

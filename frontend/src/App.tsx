@@ -20,6 +20,7 @@ import { InstrumentAnalysis } from './components/reports/InstrumentAnalysis';
 import { WinLossAnalysis } from './components/reports/WinLossAnalysis';
 import { ProfilePage } from './pages/ProfilePage';
 import { SettingsPage } from './pages/SettingsPage';
+import { SubscriptionPage } from './pages/SubscriptionPage';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -74,6 +75,7 @@ function App() {
               </Route>
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/subscription" element={<SubscriptionPage />} />
             </Route>
 
             {/* Fallback */}
