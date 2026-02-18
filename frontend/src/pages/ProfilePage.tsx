@@ -13,6 +13,8 @@ export const ProfilePage = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [deletePassword, setDeletePassword] = useState('');
+    const [deleteError, setDeleteError] = useState('');
 
     const handleLogout = async () => {
         try {
@@ -41,12 +43,18 @@ export const ProfilePage = () => {
 
     const handleDeleteAccount = async () => {
         if (!currentUser) return;
+        if (!deletePassword) {
+            setDeleteError('Please enter your password.');
+            return;
+        }
         setIsDeleting(true);
+        setDeleteError('');
         try {
-            await deleteAccount();
+            await deleteAccount(deletePassword);
             setIsDeleteAccountModalOpen(false);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error deleting account:", error);
+            setDeleteError(error.message || 'Failed to delete account. Please try again.');
         } finally {
             setIsDeleting(false);
         }
@@ -108,7 +116,7 @@ export const ProfilePage = () => {
 
             <Modal
                 isOpen={isDeleteAccountModalOpen}
-                onClose={() => setIsDeleteAccountModalOpen(false)}
+                onClose={() => { setIsDeleteAccountModalOpen(false); setDeletePassword(''); setDeleteError(''); }}
                 title="Delete Account"
             >
                 <div className="space-y-4">
@@ -125,11 +133,23 @@ export const ProfilePage = () => {
                     </div>
 
                     <p className="text-gray-300">
-                        Are you sure you want to proceed?
+                        Are you sure you want to proceed? Enter your password to confirm.
                     </p>
 
+                    <input
+                        type="password"
+                        placeholder="Enter your password"
+                        value={deletePassword}
+                        onChange={(e) => { setDeletePassword(e.target.value); setDeleteError(''); }}
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    />
+
+                    {deleteError && (
+                        <p className="text-red-400 text-sm">{deleteError}</p>
+                    )}
+
                     <div className="flex space-x-3 justify-end mt-6">
-                        <Button variant="secondary" onClick={() => setIsDeleteAccountModalOpen(false)} disabled={isDeleting}>
+                        <Button variant="secondary" onClick={() => { setIsDeleteAccountModalOpen(false); setDeletePassword(''); setDeleteError(''); }} disabled={isDeleting}>
                             Cancel
                         </Button>
                         <Button variant="danger" onClick={handleDeleteAccount} loading={isDeleting}>

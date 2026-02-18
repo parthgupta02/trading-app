@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { cancelSubscription } from '../lib/api';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import {
@@ -7,7 +9,6 @@ import {
     Calendar,
     Clock,
     IndianRupee,
-    RefreshCw,
     AlertTriangle,
     ArrowUpRight,
     Crown,
@@ -95,8 +96,9 @@ const PlanIcon = ({ plan }: { plan?: string }) => {
 
 /* ─── Page ─── */
 export const MySubscriptionPage = () => {
-    const { hasActiveSubscription, subscriptionData } = useAuth();
+    const { hasActiveSubscription, subscriptionData, refreshSubscription } = useAuth();
     const navigate = useNavigate();
+    const [cancelling, setCancelling] = useState(false);
 
     const isActive = hasActiveSubscription && subscriptionData?.status === 'active';
 
@@ -176,27 +178,52 @@ export const MySubscriptionPage = () => {
                     </div>
 
                     {/* Card Footer */}
-                    {subscriptionData.plan !== 'free' && (
-                        <div className="px-5 py-3 border-t border-gray-700/60 bg-[#0e1726]">
+
+                    <div className="px-5 py-3 border-t border-gray-700/60 bg-[#0e1726]">
+                        {subscriptionData.plan === 'free' ? (
+                            <Button
+                                variant="primary"
+                                className="w-full sm:w-auto"
+                                onClick={() => navigate('/subscription')}
+                            >
+                                <ArrowUpRight size={14} className="mr-2" />
+                                Upgrade Plan
+                            </Button>
+                        ) : (
                             <Button
                                 variant="danger"
                                 className="w-full sm:w-auto"
-                                onClick={() => {
+                                disabled={cancelling}
+                                onClick={async () => {
+                                    if (!subscriptionData?.razorpaySubscriptionId) {
+                                        alert('Subscription ID not found. Please contact support.');
+                                        return;
+                                    }
+
                                     const confirmed = window.confirm(
                                         'Are you sure you want to cancel your subscription? You will retain access until the current billing period ends.'
                                     );
-                                    if (confirmed) {
-                                        alert(
-                                            'Please contact support to cancel your subscription. We are working on in-app cancellation.'
-                                        );
+                                    if (!confirmed) return;
+
+                                    setCancelling(true);
+                                    try {
+                                        await cancelSubscription(subscriptionData.razorpaySubscriptionId);
+                                        await refreshSubscription();
+                                        alert('Subscription cancelled successfully.');
+                                        navigate(0); // Refresh page to reflect status
+                                    } catch (err: any) {
+                                        console.error('Cancellation failed:', err);
+                                        alert(err.message || 'Failed to cancel subscription.');
+                                    } finally {
+                                        setCancelling(false);
                                     }
                                 }}
                             >
                                 <AlertTriangle size={14} className="mr-2" />
-                                Cancel Subscription
+                                {cancelling ? 'Cancelling...' : 'Cancel Subscription'}
                             </Button>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </Card>
             ) : (
                 /* ─── Inactive Card ─── */

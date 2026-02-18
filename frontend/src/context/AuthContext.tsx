@@ -6,9 +6,11 @@ import {
     signOut,
     onAuthStateChanged,
     User,
-    UserCredential
+    UserCredential,
+    EmailAuthProvider,
+    reauthenticateWithCredential
 } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, deleteDoc, collection, getDocs } from "firebase/firestore";
 import { auth, db } from '../lib/firebase';
 
 export interface SubscriptionData {
@@ -34,7 +36,7 @@ interface AuthContextType {
     extractMobileFromEmail: (email: string | null) => string;
     activateFreeTrial: () => Promise<void>;
     refreshSubscription: () => Promise<void>;
-    deleteAccount: () => Promise<void>;
+    deleteAccount: (password: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -178,12 +180,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return signOut(auth);
     };
 
-    const deleteAccount = async () => {
-        if (!currentUser) return;
+    const deleteAccount = async (password: string) => {
+        if (!currentUser || !currentUser.email) return;
 
         const uid = currentUser.uid;
 
         try {
+            // 0. Re-authenticate the user (required by Firebase before account deletion)
+            const credential = EmailAuthProvider.credential(currentUser.email, password);
+            await reauthenticateWithCredential(currentUser, credential);
+
             // 1. Delete User Profile
             await deleteDoc(doc(db, 'artifacts', APP_ID, 'user_profiles', uid));
 
@@ -202,8 +208,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             // 5. Delete User from Firebase Auth
             await currentUser.delete();
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error deleting account:", error);
+            if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                throw new Error('Incorrect password. Please try again.');
+            }
             throw error;
         }
     };

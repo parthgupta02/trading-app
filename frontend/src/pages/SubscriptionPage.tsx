@@ -99,17 +99,17 @@ const RAZORPAY_PLAN_IDS: Record<string, string> = {
 };
 
 export const SubscriptionPage = () => {
-    const { currentUser, activateFreeTrial, hasActiveSubscription, refreshSubscription } = useAuth();
+    const { currentUser, activateFreeTrial, hasActiveSubscription, refreshSubscription, subscriptionData } = useAuth();
     const navigate = useNavigate();
     const isRazorpayLoaded = useRazorpay();
     const [loading, setLoading] = useState(false);
 
-    // If user already has active subscription, redirect to dashboard
+    // If user already has active subscription (AND it's not a free trial), redirect to dashboard
     useEffect(() => {
-        if (hasActiveSubscription) {
+        if (hasActiveSubscription && subscriptionData?.plan !== 'free') {
             navigate('/', { replace: true });
         }
-    }, [hasActiveSubscription, navigate]);
+    }, [hasActiveSubscription, subscriptionData, navigate]);
 
     const handleSelect = async (planId: string) => {
         if (planId === 'free') {
@@ -342,11 +342,19 @@ export const SubscriptionPage = () => {
                             {/* CTA Button */}
                             <button
                                 onClick={() => handleSelect(plan.id)}
-                                disabled={loading}
-                                className={`group w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${plan.ctaStyle}`}
+                                disabled={loading || (subscriptionData?.plan === plan.id && hasActiveSubscription)}
+                                className={`group w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${subscriptionData?.plan === plan.id && hasActiveSubscription
+                                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                    : plan.ctaStyle
+                                    }`}
                             >
-                                {loading ? 'Processing...' : plan.cta}
-                                {!loading && (
+                                {loading
+                                    ? 'Processing...'
+                                    : (subscriptionData?.plan === plan.id && hasActiveSubscription)
+                                        ? 'Current Plan'
+                                        : plan.cta
+                                }
+                                {!loading && !(subscriptionData?.plan === plan.id && hasActiveSubscription) && (
                                     <ArrowRight
                                         size={16}
                                         className="transition-transform group-hover:translate-x-1"
@@ -362,39 +370,7 @@ export const SubscriptionPage = () => {
                     <p className="text-sm text-gray-500">
                         All paid plans include a 7-day money-back guarantee. Cancel anytime from your settings.
                     </p>
-                    {currentUser && (
-                        <div className="mt-6 p-4 rounded-xl border border-amber-500/20 bg-amber-500/5">
-                            <p className="text-sm text-gray-400 mb-3">
-                                Already paid via Razorpay but seeing this page?
-                            </p>
-                            <button
-                                onClick={async () => {
-                                    if (!currentUser) return;
-                                    setLoading(true);
-                                    try {
-                                        await setDoc(doc(db, 'artifacts', 'default-app-id', 'subscriptions', currentUser.uid), {
-                                            plan: 'monthly',
-                                            status: 'active',
-                                            startedAt: new Date().toISOString(),
-                                            restoredAt: new Date().toISOString(),
-                                            note: 'Restored by user — original write was blocked by permissions',
-                                        });
-                                        await refreshSubscription();
-                                        navigate('/');
-                                    } catch (err) {
-                                        console.error('Restore failed:', err);
-                                        alert('Failed to restore subscription. Please contact support.');
-                                    } finally {
-                                        setLoading(false);
-                                    }
-                                }}
-                                disabled={loading}
-                                className="px-5 py-2 text-sm font-semibold rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 hover:bg-amber-500/30 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {loading ? 'Restoring...' : 'Restore My Subscription'}
-                            </button>
-                        </div>
-                    )}
+
                     {!currentUser && (
                         <p className="mt-4 text-sm text-gray-400">
                             Already have an account?{' '}
