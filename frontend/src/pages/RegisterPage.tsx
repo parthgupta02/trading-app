@@ -51,6 +51,9 @@ export const RegisterPage = () => {
 
     return (
         <Card className="bg-gray-800 border-gray-700">
+            <div className="flex justify-center mb-6">
+                <img src="/icons/icon-192.webp" alt="Logo" className="w-16 h-16 rounded-xl object-cover shadow-lg shadow-blue-500/20" />
+            </div>
             <h2 className="text-3xl font-bold text-center text-white mb-6">Create Account</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <Input

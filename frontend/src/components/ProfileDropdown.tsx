@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
-import { User, Settings, LogOut, ChevronDown } from 'lucide-react';
+import { User, Settings, LogOut, ChevronDown, CreditCard } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const ProfileDropdown: React.FC = () => {
@@ -83,6 +83,14 @@ export const ProfileDropdown: React.FC = () => {
                         >
                             <Settings size={16} className="mr-3" />
                             Trading Settings
+                        </Link>
+                        <Link
+                            to="/my-subscription"
+                            className="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-[#1F2937] hover:text-[#F59E0B] transition-colors"
+                            onClick={() => setIsOpen(false)}
+                        >
+                            <CreditCard size={16} className="mr-3" />
+                            Subscription Status
                         </Link>
                     </div>
 

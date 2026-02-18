@@ -8,17 +8,32 @@ import {
     User,
     UserCredential
 } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { auth, db } from '../lib/firebase';
+
+export interface SubscriptionData {
+    plan: string;
+    status: string;
+    startedAt?: string;
+    expiresAt?: any;
+    razorpaySubscriptionId?: string;
+    razorpayPaymentId?: string;
+    restoredAt?: string;
+    note?: string;
+}
 
 interface AuthContextType {
     currentUser: User | null;
     loading: boolean;
+    hasActiveSubscription: boolean;
+    subscriptionData: SubscriptionData | null;
     login: (mobile: string, password: string) => Promise<UserCredential>;
     register: (fullName: string, mobile: string, password: string) => Promise<UserCredential>;
     logout: () => Promise<void>;
     convertMobileToEmail: (mobile: string) => string;
     extractMobileFromEmail: (email: string | null) => string;
+    activateFreeTrial: () => Promise<void>;
+    refreshSubscription: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,6 +53,8 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+    const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null);
 
     // Constants for mobile -> email conversion
     const FAKE_DOMAIN = "@trade-tracker.app";
@@ -45,12 +62,66 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const APP_ID = 'default-app-id'; // Keeping this consistent with original
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
             setCurrentUser(user);
+            if (user) {
+                // Check subscription status from Firestore
+                await checkSubscription(user.uid);
+            } else {
+                setHasActiveSubscription(false);
+                setSubscriptionData(null);
+            }
             setLoading(false);
         });
         return unsubscribe;
     }, []);
+
+    const checkSubscription = async (uid: string) => {
+        try {
+            const docPath = `artifacts/${APP_ID}/subscriptions/${uid}`;
+            console.log('[Subscription] Checking subscription at path:', docPath);
+            const subDoc = await getDoc(doc(db, 'artifacts', APP_ID, 'subscriptions', uid));
+            console.log('[Subscription] Document exists:', subDoc.exists());
+            if (subDoc.exists()) {
+                const data = subDoc.data();
+                console.log('[Subscription] Document data:', JSON.stringify(data, null, 2));
+                const now = new Date();
+
+                // Store subscription data for display
+                setSubscriptionData({
+                    plan: data.plan || 'unknown',
+                    status: data.status || 'inactive',
+                    startedAt: data.startedAt,
+                    expiresAt: data.expiresAt,
+                    razorpaySubscriptionId: data.razorpaySubscriptionId,
+                    razorpayPaymentId: data.razorpayPaymentId,
+                    restoredAt: data.restoredAt,
+                    note: data.note,
+                });
+
+                // Check if subscription is still active
+                if (data.status === 'active' && data.expiresAt) {
+                    const expiresAt = data.expiresAt.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
+                    const isActive = expiresAt > now;
+                    console.log('[Subscription] Has expiresAt, isActive:', isActive, 'expiresAt:', expiresAt, 'now:', now);
+                    setHasActiveSubscription(isActive);
+                } else if (data.status === 'active') {
+                    console.log('[Subscription] Active subscription without expiresAt — setting active');
+                    setHasActiveSubscription(true);
+                } else {
+                    console.log('[Subscription] Status is not active:', data.status);
+                    setHasActiveSubscription(false);
+                }
+            } else {
+                console.log('[Subscription] No subscription document found for uid:', uid);
+                setHasActiveSubscription(false);
+                setSubscriptionData(null);
+            }
+        } catch (error) {
+            console.error('[Subscription] Error checking subscription:', error);
+            setHasActiveSubscription(false);
+        }
+    };
 
     const convertMobileToEmail = (mobile: string) => {
         return `${PHONE_PREFIX}${mobile}${FAKE_DOMAIN}`;
@@ -81,6 +152,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return userCredential;
     };
 
+    const activateFreeTrial = async () => {
+        if (!currentUser) return;
+        const now = new Date();
+        const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 1 week
+
+        await setDoc(doc(db, 'artifacts', APP_ID, 'subscriptions', currentUser.uid), {
+            plan: 'free',
+            status: 'active',
+            startedAt: now.toISOString(),
+            expiresAt: expiresAt.toISOString(),
+        });
+
+        setHasActiveSubscription(true);
+    };
+
+    const refreshSubscription = async () => {
+        if (currentUser) {
+            await checkSubscription(currentUser.uid);
+        }
+    };
+
     const logout = () => {
         return signOut(auth);
     };
@@ -92,7 +184,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         logout,
         convertMobileToEmail,
         extractMobileFromEmail,
-        loading
+        loading,
+        hasActiveSubscription,
+        subscriptionData,
+        activateFreeTrial,
+        refreshSubscription,
     };
 
     return (

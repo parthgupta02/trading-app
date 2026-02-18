@@ -25,6 +25,7 @@ export const DesktopLayout = () => {
         else if (path === '/report') title = 'Report';
         else if (path === '/profile') title = 'Profile';
         else if (path === '/settings') title = 'Trading Settings';
+        else if (path === '/my-subscription') title = 'My Subscription';
 
         // Only if we have a known title or it's dynamic
         if (path !== '/login' && path !== '/register') {

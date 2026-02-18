@@ -11,7 +11,7 @@ import {
     BarChart,
     History,
     PieChart,
-    CreditCard
+
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTabStore } from '../store/tabStore';
@@ -50,7 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                 { name: 'Win/Loss Analysis', path: '/report/win-loss', Icon: TrendingUp },
             ]
         },
-        { name: 'Subscription', path: '/subscription', Icon: CreditCard },
+
     ];
 
     const handleNavigation = (item: NavItem) => {
@@ -93,7 +93,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                 className={`flex items-center h-11 border-b border-gray-800 cursor-pointer hover:bg-gray-800/50 transition-colors ${isOpen ? 'px-3 justify-start' : 'justify-center p-1.5'}`}
                 onClick={toggleSidebar}
             >
-                <img src="/icon-192.webp" alt="Logo" className="w-6 h-6 rounded-full object-cover flex-shrink-0" />
+                <img src="/icons/icon-192.webp" alt="Logo" className="w-6 h-6 rounded-full object-cover flex-shrink-0" />
                 {isOpen && (
                     <span className="text-sm font-bold text-[#F59E0B] ml-2 whitespace-nowrap overflow-hidden transition-opacity duration-300">Trading App</span>
                 )}

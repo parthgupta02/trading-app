@@ -7,6 +7,7 @@ import { DataProvider } from './context/DataContext';
 import { MainLayout } from './layouts/MainLayout';
 import { AuthLayout } from './layouts/AuthLayout';
 
+import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { DashboardPage } from './pages/DashboardPage';
@@ -21,21 +22,39 @@ import { WinLossAnalysis } from './components/reports/WinLossAnalysis';
 import { ProfilePage } from './pages/ProfilePage';
 import { SettingsPage } from './pages/SettingsPage';
 import { SubscriptionPage } from './pages/SubscriptionPage';
+import { MySubscriptionPage } from './pages/MySubscriptionPage';
 
-// Protected Route Wrapper
+// Protected Route Wrapper — requires authentication
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { currentUser, loading } = useAuth();
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>;
 
   if (!currentUser) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/home" replace />;
   }
 
   return <>{children}</>;
 };
 
-// Public Route Wrapper (redirects to home if already logged in)
+// Subscription Guard — redirects to /subscription if no active plan
+const SubscriptionGuard = ({ children }: { children: React.ReactNode }) => {
+  const { currentUser, loading, hasActiveSubscription } = useAuth();
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>;
+
+  if (!currentUser) {
+    return <Navigate to="/home" replace />;
+  }
+
+  if (!hasActiveSubscription) {
+    return <Navigate to="/subscription" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+// Public Route Wrapper (redirects to dashboard if already logged in)
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { currentUser, loading } = useAuth();
 
@@ -54,14 +73,20 @@ function App() {
       <AuthProvider>
         <DataProvider>
           <Routes>
-            {/* Public Routes */}
+            {/* Public Landing Page */}
+            <Route path="/home" element={<PublicRoute><HomePage /></PublicRoute>} />
+
+            {/* Auth Routes */}
             <Route element={<AuthLayout />}>
               <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
               <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
             </Route>
 
-            {/* Protected Routes */}
-            <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+            {/* Subscription Page — requires auth but NOT active subscription */}
+            <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage /></ProtectedRoute>} />
+
+            {/* Protected Routes — requires auth AND active subscription */}
+            <Route element={<SubscriptionGuard><MainLayout /></SubscriptionGuard>}>
               <Route path="/" element={<DashboardPage />} />
               <Route path="/gold" element={<GoldPage />} />
               <Route path="/silver" element={<SilverPage />} />
@@ -75,11 +100,11 @@ function App() {
               </Route>
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/subscription" element={<SubscriptionPage />} />
+              <Route path="/my-subscription" element={<MySubscriptionPage />} />
             </Route>
 
             {/* Fallback */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<Navigate to="/home" replace />} />
           </Routes>
         </DataProvider>
       </AuthProvider>
