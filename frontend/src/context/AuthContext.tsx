@@ -34,6 +34,7 @@ interface AuthContextType {
     extractMobileFromEmail: (email: string | null) => string;
     activateFreeTrial: () => Promise<void>;
     refreshSubscription: () => Promise<void>;
+    deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -177,6 +178,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return signOut(auth);
     };
 
+    const deleteAccount = async () => {
+        if (!currentUser) return;
+
+        const uid = currentUser.uid;
+
+        try {
+            // 1. Delete User Profile
+            await deleteDoc(doc(db, 'artifacts', APP_ID, 'user_profiles', uid));
+
+            // 2. Delete Subscription Data
+            await deleteDoc(doc(db, 'artifacts', APP_ID, 'subscriptions', uid));
+
+            // 3. Delete Commodity Trades (Subcollection)
+            const tradesRef = collection(db, `artifacts/${APP_ID}/users/${uid}/commodity_trades`);
+            const snapshot = await getDocs(tradesRef);
+            const deletePromises = snapshot.docs.map(docSnap => deleteDoc(doc(db, `artifacts/${APP_ID}/users/${uid}/commodity_trades`, docSnap.id)));
+            await Promise.all(deletePromises);
+
+            // 4. Delete User Data Document
+            await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', uid));
+
+            // 5. Delete User from Firebase Auth
+            await currentUser.delete();
+
+        } catch (error) {
+            console.error("Error deleting account:", error);
+            throw error;
+        }
+    };
+
     const value: AuthContextType = {
         currentUser,
         login,
@@ -189,6 +220,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         subscriptionData,
         activateFreeTrial,
         refreshSubscription,
+        deleteAccount,
     };
 
     return (

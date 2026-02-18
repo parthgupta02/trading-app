@@ -8,7 +8,7 @@ export const MobileLayout = () => {
             {/* Top Bar */}
             <div className="flex items-center justify-between p-4 bg-[#1F2937] border-b border-gray-800 sticky top-0 z-40">
                 <div className="flex items-center gap-2">
-                    <img src="/logo.png" alt="Logo" className="w-8 h-8 rounded-full object-cover" />
+                    <img src="/icons/icon-192.webp" alt="Logo" className="w-8 h-8 rounded-full object-cover" />
                     <h1 className="text-lg font-bold tracking-tight">Trading App</h1>
                 </div>
                 <ProfileDropdown />

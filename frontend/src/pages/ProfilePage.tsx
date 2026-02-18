@@ -8,9 +8,10 @@ import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 
 export const ProfilePage = () => {
-    const { currentUser, logout, extractMobileFromEmail } = useAuth();
+    const { currentUser, logout, extractMobileFromEmail, deleteAccount } = useAuth();
     const { profile, APP_ID } = useData();
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
     const handleLogout = async () => {
@@ -33,6 +34,19 @@ export const ProfilePage = () => {
             // Optional: Show success toast
         } catch (error) {
             console.error("Error clearing data:", error);
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        if (!currentUser) return;
+        setIsDeleting(true);
+        try {
+            await deleteAccount();
+            setIsDeleteAccountModalOpen(false);
+        } catch (error) {
+            console.error("Error deleting account:", error);
         } finally {
             setIsDeleting(false);
         }
@@ -64,9 +78,14 @@ export const ProfilePage = () => {
                 <p className="text-gray-400 mb-6 text-sm">
                     Once you delete your data, there is no going back. Please be certain.
                 </p>
-                <Button onClick={() => setIsDeleteModalOpen(true)} variant="danger">
-                    Clear All Trade Data
-                </Button>
+                <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
+                    <Button onClick={() => setIsDeleteModalOpen(true)} variant="danger">
+                        Clear All Trade Data
+                    </Button>
+                    <Button onClick={() => setIsDeleteAccountModalOpen(true)} variant="danger" className="bg-red-900/50 hover:bg-red-900 border-red-800">
+                        Delete Account
+                    </Button>
+                </div>
             </Card>
 
             <Modal
@@ -84,6 +103,39 @@ export const ProfilePage = () => {
                     <Button variant="danger" onClick={handleClearData} loading={isDeleting}>
                         Yes, Delete Everything
                     </Button>
+                </div>
+            </Modal>
+
+            <Modal
+                isOpen={isDeleteAccountModalOpen}
+                onClose={() => setIsDeleteAccountModalOpen(false)}
+                title="Delete Account"
+            >
+                <div className="space-y-4">
+                    <div className="bg-red-900/20 p-4 rounded-lg border border-red-900/50">
+                        <p className="text-red-400 font-medium mb-2">Warning: This action is permanent!</p>
+                        <p className="text-gray-300 text-sm">
+                            Deleting your account will permanently remove:
+                        </p>
+                        <ul className="list-disc list-inside text-gray-400 text-sm mt-2 ml-2 space-y-1">
+                            <li>Your profile information</li>
+                            <li>All trade history and performance data</li>
+                            <li>Active subscriptions</li>
+                        </ul>
+                    </div>
+
+                    <p className="text-gray-300">
+                        Are you sure you want to proceed?
+                    </p>
+
+                    <div className="flex space-x-3 justify-end mt-6">
+                        <Button variant="secondary" onClick={() => setIsDeleteAccountModalOpen(false)} disabled={isDeleting}>
+                            Cancel
+                        </Button>
+                        <Button variant="danger" onClick={handleDeleteAccount} loading={isDeleting}>
+                            Yes, Delete Account
+                        </Button>
+                    </div>
                 </div>
             </Modal>
         </div>
