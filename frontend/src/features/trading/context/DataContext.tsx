@@ -152,8 +152,11 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
                 const lotSize = commodity === 'gold' ? settings.gold.lotSize : settings.silver.lotSize;
                 const commission = commodity === 'gold' ? settings.gold.commissionPerLot : settings.silver.commissionPerLot;
 
-                // Calculate current open positions
-                const comTrades = trades.filter(t => t.commodity === commodity);
+                // Calculate current open positions (snapshot at settlement date)
+                const comTrades = trades.filter(t => {
+                    const tradeDate = t.date || toStorageDate(t.timestamp as any);
+                    return t.commodity === commodity && tradeDate <= settlementDate;
+                });
                 const { openPositions } = calculateFifoPL(comTrades, commodity, commission, lotSize);
 
                 // Sum up quantities
