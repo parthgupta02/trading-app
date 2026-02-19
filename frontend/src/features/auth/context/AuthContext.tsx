@@ -103,7 +103,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 });
 
                 // Check if subscription is still active
-                if (data.status === 'active' && data.expiresAt) {
+                // Free plan is always active
+                if (data.status === 'active' && data.plan === 'free') {
+                    setHasActiveSubscription(true);
+                } else if (data.status === 'active' && data.expiresAt) {
                     const expiresAt = data.expiresAt.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
                     const isActive = expiresAt > now;
                     console.log('[Subscription] Has expiresAt, isActive:', isActive, 'expiresAt:', expiresAt, 'now:', now);
