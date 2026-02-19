@@ -47,7 +47,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                 { name: 'Weekly Report', path: '/report/weekly', Icon: BarChart },
                 { name: 'Monthly Report', path: '/report/monthly', Icon: FileText },
                 { name: 'Instrument Analysis', path: '/report/instrument', Icon: PieChart },
-                { name: 'P&L Analysis', path: '/report/win-loss', Icon: TrendingUp },
+                { name: 'Win/Loss Analysis', path: '/report/win-loss', Icon: TrendingUp },
             ]
         },
 

@@ -7,7 +7,7 @@ const reportTabs = [
     { to: '/report/weekly', label: 'Weekly', Icon: BarChart },
     { to: '/report/monthly', label: 'Monthly', Icon: FileText },
     { to: '/report/instrument', label: 'Instrument', Icon: PieChart },
-    { to: '/report/win-loss', label: 'P&L', Icon: TrendingUp },
+    { to: '/report/win-loss', label: 'Win/Loss', Icon: TrendingUp },
 ];
 
 export const ReportPage = () => {
