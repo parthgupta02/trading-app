@@ -1,28 +1,28 @@
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { DataProvider } from './context/DataContext';
+import { AuthProvider, useAuth } from './features/auth/context/AuthContext';
+import { DataProvider } from './features/trading/context/DataContext';
 
-import { MainLayout } from './layouts/MainLayout';
-import { AuthLayout } from './layouts/AuthLayout';
+import { MainLayout } from './layout/layouts/MainLayout';
+import { AuthLayout } from './features/auth/layouts/AuthLayout';
 
-import { HomePage } from './pages/HomePage';
-import { LoginPage } from './pages/LoginPage';
-import { RegisterPage } from './pages/RegisterPage';
-import { DashboardPage } from './pages/DashboardPage';
-import { GoldPage } from './pages/GoldPage';
-import { SilverPage } from './pages/SilverPage';
-import { ReportPage } from './pages/ReportPage';
-import { WeeklyReport } from './components/reports/WeeklyReport';
-import { MonthlyReport } from './components/reports/MonthlyReport';
-import { TradeHistory } from './components/reports/TradeHistory';
-import { InstrumentAnalysis } from './components/reports/InstrumentAnalysis';
-import { WinLossAnalysis } from './components/reports/WinLossAnalysis';
-import { ProfilePage } from './pages/ProfilePage';
-import { SettingsPage } from './pages/SettingsPage';
-import { SubscriptionPage } from './pages/SubscriptionPage';
-import { MySubscriptionPage } from './pages/MySubscriptionPage';
+import { HomePage } from './landing/pages/HomePage';
+import { LoginPage } from './features/auth/pages/LoginPage';
+import { RegisterPage } from './features/auth/pages/RegisterPage';
+import { DashboardPage } from './features/dashboard/pages/DashboardPage';
+import { GoldPage } from './features/trading/pages/GoldPage';
+import { SilverPage } from './features/trading/pages/SilverPage';
+import { ReportPage } from './features/reports/pages/ReportPage';
+import { WeeklyReport } from './features/reports/components/WeeklyReport';
+import { MonthlyReport } from './features/reports/components/MonthlyReport';
+import { TradeHistory } from './features/reports/components/TradeHistory';
+import { InstrumentAnalysis } from './features/reports/components/InstrumentAnalysis';
+import { WinLossAnalysis } from './features/reports/components/WinLossAnalysis';
+import { ProfilePage } from './features/profile/pages/ProfilePage';
+import { SettingsPage } from './features/trading/pages/SettingsPage';
+import { SubscriptionPage } from './features/subscription/pages/SubscriptionPage';
+import { MySubscriptionPage } from './features/subscription/pages/MySubscriptionPage';
 
 // Protected Route Wrapper — requires authentication
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
