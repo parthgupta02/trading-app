@@ -143,12 +143,14 @@ export const TradeHistory: React.FC = () => {
     return (
         <Card title="Trade History" className="bg-[#151F32]">
             {/* Filters */}
-            <div className="flex flex-wrap gap-4 mb-6 bg-gray-800/50 p-4 rounded-lg">
-                <div className="flex items-center gap-2">
-                    <span className="text-gray-400 text-sm">Date Range:</span>
-                    <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600" />
-                    <span className="text-gray-500">-</span>
-                    <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600" />
+            <div className="flex flex-col gap-4 mb-6 bg-gray-800/50 p-4 rounded-lg">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <span className="text-gray-400 text-sm whitespace-nowrap">Date Range:</span>
+                    <div className="flex items-center gap-2 min-w-0">
+                        <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600 min-w-0 w-full sm:w-auto" />
+                        <span className="text-gray-500">-</span>
+                        <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600 min-w-0 w-full sm:w-auto" />
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -169,16 +171,16 @@ export const TradeHistory: React.FC = () => {
                     </select>
                 </div>
 
-                <div className="ml-auto flex gap-2">
+                <div className="flex flex-wrap gap-2">
                     <button
                         onClick={handleExportPDF}
-                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded flex items-center gap-2 text-sm font-medium transition-colors"
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded flex items-center gap-2 text-sm font-medium transition-colors flex-1 sm:flex-none justify-center"
                     >
                         <FileText size={16} /> Export PDF
                     </button>
                     <button
                         onClick={handleExportCSV}
-                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded flex items-center gap-2 text-sm font-medium transition-colors"
+                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded flex items-center gap-2 text-sm font-medium transition-colors flex-1 sm:flex-none justify-center"
                     >
                         <Download size={16} /> Export CSV
                     </button>

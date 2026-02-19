@@ -91,7 +91,7 @@ function App() {
               <Route path="/gold" element={<GoldPage />} />
               <Route path="/silver" element={<SilverPage />} />
               <Route path="/report" element={<ReportPage />}>
-                <Route index element={<Navigate to="weekly" replace />} />
+                <Route index element={<Navigate to="history" replace />} />
                 <Route path="weekly" element={<WeeklyReport />} />
                 <Route path="monthly" element={<MonthlyReport />} />
                 <Route path="history" element={<TradeHistory />} />

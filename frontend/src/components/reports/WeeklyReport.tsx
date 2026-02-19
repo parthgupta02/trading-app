@@ -80,15 +80,14 @@ export const WeeklyReport: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center gap-4 bg-gray-800/50 p-4 rounded-lg border border-gray-700">
-                <Calendar className="text-gray-400" />
-                <span className="text-gray-300 font-medium">Select Week:</span>
-                <span className="text-gray-300 font-medium">Select Week:</span>
+            <div className="flex flex-wrap items-center gap-3 bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                <Calendar className="text-gray-400 flex-shrink-0" size={20} />
+                <span className="text-gray-300 font-medium text-sm">Select Week:</span>
                 <select
                     value={selectedWeek}
                     onChange={(e) => setSelectedWeek(e.target.value)}
-                    className="bg-gray-700 text-white border border-gray-600 rounded px-3 py-2 outline-none focus:border-yellow-500 appearance-none pr-8 cursor-pointer"
-                    style={{ backgroundImage: 'none' }} // Remove default arrow if needed, or keep for simplicity
+                    className="bg-gray-700 text-white border border-gray-600 rounded px-3 py-2 text-sm outline-none focus:border-yellow-500 appearance-none cursor-pointer min-w-0 flex-1 sm:flex-none"
+                    style={{ backgroundImage: 'none' }}
                 >
                     {(() => {
                         const uniqueMondays = Array.from(new Set(processedTrades.map(t => getMondayOfWeek(t.date)))).sort();

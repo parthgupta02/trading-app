@@ -3,11 +3,11 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { BarChart, FileText, History, PieChart, TrendingUp } from 'lucide-react';
 
 const reportTabs = [
+    { to: '/report/history', label: 'History', Icon: History },
     { to: '/report/weekly', label: 'Weekly', Icon: BarChart },
     { to: '/report/monthly', label: 'Monthly', Icon: FileText },
-    { to: '/report/history', label: 'History', Icon: History },
     { to: '/report/instrument', label: 'Instrument', Icon: PieChart },
-    { to: '/report/win-loss', label: 'Win/Loss', Icon: TrendingUp },
+    { to: '/report/win-loss', label: 'P&L', Icon: TrendingUp },
 ];
 
 export const ReportPage = () => {
