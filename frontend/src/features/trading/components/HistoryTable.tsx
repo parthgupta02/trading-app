@@ -26,16 +26,6 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({ commodity }) => {
     const [deletingTradeId, setDeletingTradeId] = useState<string | null>(null);
     const [selectedWeek, setSelectedWeek] = useState<string>(activeWeekMonday);
 
-    // Sync selectedWeek with activeWeekMonday on mount/change if needed, 
-    // but we might want to let user browse freely. 
-    // Let's set it to activeWeekMonday initially (done in useState default).
-
-    // Update selected week if active week changes (e.g. after a settlement)
-    React.useEffect(() => {
-        setSelectedWeek(activeWeekMonday);
-    }, [activeWeekMonday]);
-
-
     // Filter and Sort
     const filteredTrades = trades
         .filter((t) => t.commodity === commodity)
@@ -45,13 +35,25 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({ commodity }) => {
             return dateA.getTime() - dateB.getTime();
         });
 
-    // Calculate Weeks
-    // Calculate Global Weeks
-    const uniqueMondays = Array.from(new Set(trades.map(t => getMondayOfWeek(t.date || t.timestamp)))).sort();
+    // Calculate Weeks — use all trades for global week numbering
+    const allMondays = Array.from(new Set(trades.map(t => getMondayOfWeek(t.date || t.timestamp)))).sort();
+    // Always include the active week so the current week is always selectable
+    const uniqueMondays = Array.from(new Set([...allMondays, activeWeekMonday])).sort();
     const globalWeekMap = new Map<string, number>();
     uniqueMondays.forEach((monday, index) => {
         globalWeekMap.set(monday, index + 1);
     });
+
+    // Sync selectedWeek when activeWeekMonday or available weeks change
+    React.useEffect(() => {
+        // If activeWeekMonday exists in dropdown options, select it
+        if (uniqueMondays.includes(activeWeekMonday)) {
+            setSelectedWeek(activeWeekMonday);
+        } else if (uniqueMondays.length > 0) {
+            // Otherwise select the latest available week
+            setSelectedWeek(uniqueMondays[uniqueMondays.length - 1]);
+        }
+    }, [activeWeekMonday, uniqueMondays.join(',')]);
 
     const tradesWithWeek = filteredTrades
         .filter(trade => {
