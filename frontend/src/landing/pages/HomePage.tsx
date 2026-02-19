@@ -47,7 +47,7 @@ const plans = [
     {
         name: 'Free Plan',
         price: '₹0',
-        period: 'for 1 week',
+        period: 'for 2 weeks',
         icon: Shield,
         color: 'border-gray-600',
         bg: 'bg-gray-800/40',
@@ -194,7 +194,7 @@ export const HomePage = () => {
                             <span className="text-amber-400">pricing</span>
                         </h2>
                         <p className="mt-3 text-gray-400 max-w-xl mx-auto">
-                            Start free for a week. Upgrade when you're ready.
+                            Start free for 2 weeks. Upgrade when you're ready.
                         </p>
                     </div>
 

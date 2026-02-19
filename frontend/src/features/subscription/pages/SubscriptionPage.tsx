@@ -22,7 +22,7 @@ const plans = [
         id: 'free',
         name: 'Free Plan',
         icon: Shield,
-        tagline: 'Try it out for 1 week',
+        tagline: 'Try it out for 2 weeks',
         price: '₹0',
         period: '',
         monthly: '',
@@ -99,7 +99,7 @@ const RAZORPAY_PLAN_IDS: Record<string, string> = {
 };
 
 export const SubscriptionPage = () => {
-    const { currentUser, activateFreeTrial, hasActiveSubscription, refreshSubscription, subscriptionData } = useAuth();
+    const { currentUser, activateFreeTrial, hasActiveSubscription, refreshSubscription, subscriptionData, freeTrialUsed } = useAuth();
     const navigate = useNavigate();
     const isRazorpayLoaded = useRazorpay();
     const [loading, setLoading] = useState(false);
@@ -111,8 +111,11 @@ export const SubscriptionPage = () => {
         }
     }, [hasActiveSubscription, subscriptionData, navigate]);
 
+    const isFreePlanDisabled = freeTrialUsed || (subscriptionData?.plan === 'free' && hasActiveSubscription);
+
     const handleSelect = async (planId: string) => {
         if (planId === 'free') {
+            if (freeTrialUsed) return; // Block re-activation
             await activateFreeTrial();
             navigate('/');
             return;
@@ -248,7 +251,7 @@ export const SubscriptionPage = () => {
                         </span>
                     </h1>
                     <p className="mt-4 text-gray-400 max-w-xl mx-auto text-base md:text-lg">
-                        Start free for 1 week. Upgrade anytime for unlimited access to all features.
+                        Start free for 2 weeks. Upgrade anytime for unlimited access to all features.
                     </p>
                 </div>
 
@@ -342,17 +345,21 @@ export const SubscriptionPage = () => {
                             {/* CTA Button */}
                             <button
                                 onClick={() => handleSelect(plan.id)}
-                                disabled={loading || (subscriptionData?.plan === plan.id && hasActiveSubscription)}
-                                className={`group w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${subscriptionData?.plan === plan.id && hasActiveSubscription
+                                disabled={loading || (subscriptionData?.plan === plan.id && hasActiveSubscription) || (plan.id === 'free' && isFreePlanDisabled)}
+                                className={`group w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${(subscriptionData?.plan === plan.id && hasActiveSubscription)
                                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                    : plan.ctaStyle
+                                    : (plan.id === 'free' && isFreePlanDisabled)
+                                        ? 'bg-gray-800 text-gray-500 border border-gray-700'
+                                        : plan.ctaStyle
                                     }`}
                             >
                                 {loading
                                     ? 'Processing...'
                                     : (subscriptionData?.plan === plan.id && hasActiveSubscription)
                                         ? 'Current Plan'
-                                        : plan.cta
+                                        : (plan.id === 'free' && isFreePlanDisabled)
+                                            ? 'Trial Used'
+                                            : plan.cta
                                 }
                                 {!loading && !(subscriptionData?.plan === plan.id && hasActiveSubscription) && (
                                     <ArrowRight

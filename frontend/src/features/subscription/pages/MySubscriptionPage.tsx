@@ -49,7 +49,7 @@ const computeExpiryDate = (startedAt?: string | any, plan?: string): Date | null
             expiry.setFullYear(expiry.getFullYear() + 1);
             break;
         case 'free':
-            expiry.setDate(expiry.getDate() + 7);
+            expiry.setDate(expiry.getDate() + 14);
             break;
         default:
             return null;

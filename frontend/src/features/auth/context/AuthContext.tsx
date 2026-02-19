@@ -22,6 +22,7 @@ export interface SubscriptionData {
     razorpayPaymentId?: string;
     restoredAt?: string;
     note?: string;
+    freeTrialUsed?: boolean;
 }
 
 interface AuthContextType {
@@ -37,6 +38,7 @@ interface AuthContextType {
     activateFreeTrial: () => Promise<void>;
     refreshSubscription: () => Promise<void>;
     deleteAccount: (password: string) => Promise<void>;
+    freeTrialUsed: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -58,6 +60,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
     const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null);
+    const [freeTrialUsed, setFreeTrialUsed] = useState(false);
 
     // Constants for mobile -> email conversion
     const FAKE_DOMAIN = "@trade-tracker.app";
@@ -90,6 +93,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 console.log('[Subscription] Document data:', JSON.stringify(data, null, 2));
                 const now = new Date();
 
+                // Track if free trial was ever used (even if expired)
+                if (data.plan === 'free') {
+                    setFreeTrialUsed(true);
+                }
+
                 // Store subscription data for display
                 setSubscriptionData({
                     plan: data.plan || 'unknown',
@@ -100,13 +108,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                     razorpayPaymentId: data.razorpayPaymentId,
                     restoredAt: data.restoredAt,
                     note: data.note,
+                    freeTrialUsed: data.plan === 'free',
                 });
 
                 // Check if subscription is still active
-                // Free plan is always active
-                if (data.status === 'active' && data.plan === 'free') {
-                    setHasActiveSubscription(true);
-                } else if (data.status === 'active' && data.expiresAt) {
+                if (data.status === 'active' && data.expiresAt) {
                     const expiresAt = data.expiresAt.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
                     const isActive = expiresAt > now;
                     console.log('[Subscription] Has expiresAt, isActive:', isActive, 'expiresAt:', expiresAt, 'now:', now);
@@ -122,6 +128,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 console.log('[Subscription] No subscription document found for uid:', uid);
                 setHasActiveSubscription(false);
                 setSubscriptionData(null);
+                setFreeTrialUsed(false);
             }
         } catch (error) {
             console.error('[Subscription] Error checking subscription:', error);
@@ -161,7 +168,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const activateFreeTrial = async () => {
         if (!currentUser) return;
         const now = new Date();
-        const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 1 week
+        const expiresAt = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // 2 weeks
 
         await setDoc(doc(db, 'artifacts', APP_ID, 'subscriptions', currentUser.uid), {
             plan: 'free',
@@ -233,6 +240,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         activateFreeTrial,
         refreshSubscription,
         deleteAccount,
+        freeTrialUsed,
     };
 
     return (
