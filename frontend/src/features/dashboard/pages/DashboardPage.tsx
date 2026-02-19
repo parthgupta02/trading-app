@@ -5,7 +5,7 @@ import { getMondayOfWeek, getFridayOfWeek } from '../../trading/utils/dateUtils'
 import { Card } from '../../../shared/components/ui/Card';
 import { calculateFifoPL } from '../../trading/utils/calculations';
 import { Trade } from '../../../types';
-import { ArrowUpRight, ArrowDownRight, DollarSign, Activity, Layers } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, DollarSign, Activity } from 'lucide-react';
 import { Button } from '../../../shared/components/ui/Button';
 import { SettlementModal } from '../../trading/components/SettlementModal';
 
@@ -222,6 +222,7 @@ export const DashboardPage = () => {
             totalTradesCount,
             netOpenPos,
             totalRealizedPL,
+            overallPL: goldFifo.pairs.reduce((acc, p) => acc + p.net, 0) + silverFifo.pairs.reduce((acc, p) => acc + p.net, 0),
             goldPositions: goldFifo.openPositions || { longs: [], shorts: [] },
             silverPositions: silverFifo.openPositions || { longs: [], shorts: [] }
         };
@@ -261,11 +262,12 @@ export const DashboardPage = () => {
             {/* Top Stats Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <StatCard
-                    title="Net Open Position"
-                    value={stats.netOpenPos > 0 ? `+${stats.netOpenPos}` : `${stats.netOpenPos}`}
-                    subValue={stats.netOpenPos !== 0 ? (stats.netOpenPos > 0 ? "Long Bias" : "Short Bias") : "Flat"}
-                    icon={<Layers size={16} className="text-[#F59E0B]" />}
-                    color={stats.netOpenPos > 0 ? "text-green-500" : (stats.netOpenPos < 0 ? "text-red-500" : "text-gray-100")}
+                    title="Overall Profit/Loss"
+                    value={stats.overallPL.toFixed(2)}
+                    subValue="All Time"
+                    trend={stats.overallPL > 0 ? 'up' : (stats.overallPL < 0 ? 'down' : 'neutral')}
+                    icon={<DollarSign size={16} className={stats.overallPL >= 0 ? "text-green-500" : "text-red-500"} />}
+                    color={stats.overallPL > 0 ? "text-green-500" : (stats.overallPL < 0 ? "text-red-500" : "text-gray-100")}
                 />
                 <StatCard
                     title="Realized P&L (Wk)"
@@ -282,6 +284,12 @@ export const DashboardPage = () => {
                     icon={<Activity size={16} className="text-purple-500" />}
                 />
             </div>
+
+            {/* Open Standing Positions */}
+            <OpenPositionsCard
+                goldPositions={stats.goldPositions}
+                silverPositions={stats.silverPositions}
+            />
 
             {/* Commodity Summaries */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -300,12 +308,6 @@ export const DashboardPage = () => {
                     lotSize={settings.silver.lotSize}
                 />
             </div>
-
-            {/* Open Standing Positions */}
-            <OpenPositionsCard
-                goldPositions={stats.goldPositions}
-                silverPositions={stats.silverPositions}
-            />
 
             {/* Weekly Performance Placeholder */}
             <Card className="p-3">
