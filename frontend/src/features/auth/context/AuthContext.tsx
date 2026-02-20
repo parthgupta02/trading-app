@@ -18,6 +18,7 @@ export interface SubscriptionData {
     status: string;
     startedAt?: string;
     expiresAt?: any;
+    currentPeriodEnd?: number; // Unix timestamp in seconds
     razorpaySubscriptionId?: string;
     razorpayPaymentId?: string;
     restoredAt?: string;
@@ -98,12 +99,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                     setFreeTrialUsed(true);
                 }
 
+                // Resolve expiry: prefer currentPeriodEnd (seconds) -> Date, else expiresAt
+                let resolvedExpiresAt: Date | null = null;
+
+                if (data.currentPeriodEnd) {
+                    resolvedExpiresAt = new Date(data.currentPeriodEnd * 1000);
+                } else if (data.expiresAt) {
+                    resolvedExpiresAt = data.expiresAt.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
+                }
+
                 // Store subscription data for display
                 setSubscriptionData({
                     plan: data.plan || 'unknown',
                     status: data.status || 'inactive',
                     startedAt: data.startedAt,
-                    expiresAt: data.expiresAt,
+                    expiresAt: resolvedExpiresAt, // normalized to Date object
+                    currentPeriodEnd: data.currentPeriodEnd,
                     razorpaySubscriptionId: data.razorpaySubscriptionId,
                     razorpayPaymentId: data.razorpayPaymentId,
                     restoredAt: data.restoredAt,
@@ -112,13 +123,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 });
 
                 // Check if subscription is still active
-                if (data.status === 'active' && data.expiresAt) {
-                    const expiresAt = data.expiresAt.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
-                    const isActive = expiresAt > now;
-                    console.log('[Subscription] Has expiresAt, isActive:', isActive, 'expiresAt:', expiresAt, 'now:', now);
+                if (data.status === 'active' && resolvedExpiresAt) {
+                    const isActive = resolvedExpiresAt > now;
+                    console.log('[Subscription] Expiry check:', isActive, 'Expires:', resolvedExpiresAt, 'Now:', now);
                     setHasActiveSubscription(isActive);
                 } else if (data.status === 'active') {
-                    console.log('[Subscription] Active subscription without expiresAt — setting active');
+                    console.log('[Subscription] Active subscription without expiry — setting active');
                     setHasActiveSubscription(true);
                 } else {
                     console.log('[Subscription] Status is not active:', data.status);

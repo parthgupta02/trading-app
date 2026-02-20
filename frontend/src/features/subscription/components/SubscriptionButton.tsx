@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useRazorpay } from '../hooks/useRazorpay';
 import { createSubscription, verifyPayment } from '../../../shared/lib/api';
+import { useAuth } from '../../auth/context/AuthContext';
 
 interface SubscriptionButtonProps {
     planId: string;
@@ -8,6 +9,7 @@ interface SubscriptionButtonProps {
 
 export const SubscriptionButton: React.FC<SubscriptionButtonProps> = ({ planId }) => {
     const isRazorpayLoaded = useRazorpay();
+    const { currentUser } = useAuth();
     const [loading, setLoading] = useState(false);
 
     const handleSubscription = async () => {
@@ -20,7 +22,7 @@ export const SubscriptionButton: React.FC<SubscriptionButtonProps> = ({ planId }
 
         try {
             // 1. Create Subscription
-            const data = await createSubscription(planId);
+            const data = await createSubscription(planId, currentUser!.uid);
             const { subscription_id } = data;
 
             // 2. Open Razorpay Checkout

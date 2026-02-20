@@ -1,13 +1,14 @@
 
 const API_BASE_URL = 'https://us-central1-parth-trading.cloudfunctions.net';
 
-export const createSubscription = async (planId: string) => {
+export const createSubscription = async (planId: string, userId: string) => {
+    console.log("createSubscription payload:", { planId, userId });
     const response = await fetch(`${API_BASE_URL}/createSubscription`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ planId }),
+        body: JSON.stringify({ planId, userId }),
     });
 
     if (!response.ok) {

@@ -4,8 +4,7 @@ import { useAuth } from '../../auth/context/AuthContext';
 import { ProfileDropdown } from '../../../layout/components/ProfileDropdown';
 import { useRazorpay } from '../hooks/useRazorpay';
 import { createSubscription, verifyPayment } from '../../../shared/lib/api';
-import { doc, setDoc } from 'firebase/firestore';
-import { db } from '../../../shared/lib/firebase';
+
 import {
     Check,
     Star,
@@ -136,7 +135,7 @@ export const SubscriptionPage = () => {
         setLoading(true);
         try {
             // 1. Create subscription via backend
-            const data = await createSubscription(razorpayPlanId);
+            const data = await createSubscription(razorpayPlanId, currentUser!.uid);
             const { subscription_id } = data;
 
             // 2. Open Razorpay Checkout
@@ -148,37 +147,21 @@ export const SubscriptionPage = () => {
                 theme: { color: '#F59E0B' },
                 handler: async (response: any) => {
                     try {
-                        // Razorpay handler only fires on successful payment
-                        // Write subscription to Firestore FIRST to ensure user gets access
-                        if (currentUser) {
-                            await setDoc(doc(db, 'artifacts', 'default-app-id', 'subscriptions', currentUser.uid), {
-                                plan: planId,
-                                status: 'active',
-                                razorpaySubscriptionId: response.razorpay_subscription_id,
-                                razorpayPaymentId: response.razorpay_payment_id,
-                                startedAt: new Date().toISOString(),
-                            });
-                        }
+                        // Verify payment via backend — webhook will activate subscription in Firestore
+                        await verifyPayment({
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_subscription_id: response.razorpay_subscription_id,
+                            razorpay_signature: response.razorpay_signature,
+                        });
 
-                        // Refresh subscription status so guards know we're subscribed
+                        // Refresh subscription status from Firestore (webhook should have updated it)
                         await refreshSubscription();
-
-                        // Try backend verification (non-blocking — subscription already activated)
-                        try {
-                            await verifyPayment({
-                                razorpay_payment_id: response.razorpay_payment_id,
-                                razorpay_subscription_id: response.razorpay_subscription_id,
-                                razorpay_signature: response.razorpay_signature,
-                            });
-                        } catch (verifyErr) {
-                            console.warn('Backend verification failed (subscription still active):', verifyErr);
-                        }
 
                         alert('Subscription activated successfully! 🎉');
                         navigate('/');
                     } catch (err) {
-                        console.error('Subscription activation failed:', err);
-                        alert('Something went wrong activating your subscription. Please contact support.');
+                        console.error('Payment verification failed:', err);
+                        alert('Payment verification failed. Please contact support if your subscription is not activated.');
                     }
                 },
             };

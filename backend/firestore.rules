@@ -7,9 +7,11 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Users can read/write their own subscription
+    // Users can read their own subscription (READ ONLY)
+    // Writes are only allowed via Backend Admin SDK (Webhooks)
     match /artifacts/{appId}/subscriptions/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false;
     }
 
     // Users can read/write their own trades data
