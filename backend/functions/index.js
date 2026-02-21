@@ -35,14 +35,39 @@ exports.createSubscription = onRequest({ cors: true }, async (req, res) => {
             return res.status(400).send({ error: 'Missing planId or userId' });
         }
 
+        let customer;
+        try {
+            const subDoc = await db.doc(`artifacts/${APP_ID}/subscriptions/${userId}`).get();
+            if (subDoc.exists && subDoc.data().razorpayCustomerId) {
+                customer = await razorpay.customers.fetch(subDoc.data().razorpayCustomerId);
+            }
+        } catch (err) {
+            console.warn("Existing customer fetch failed:", err.message);
+        }
+
+        if (!customer) {
+            let userRecord;
+            try {
+                userRecord = await admin.auth().getUser(userId);
+            } catch (err) {
+                console.warn("Failed to fetch user from Firebase Auth:", err.message);
+            }
+
+            customer = await razorpay.customers.create({
+                name: userRecord?.displayName || "User",
+                email: userRecord?.email || undefined,
+                notes: {
+                    firebase_uid: userId
+                }
+            });
+        }
+
         const subscription = await razorpay.subscriptions.create({
             plan_id: planId,
             total_count: total_count,
             quantity: 1,
             customer_notify: 1,
-            notes: {
-                firebase_uid: userId,
-            },
+            customer_id: customer.id
         });
 
         return res.status(200).json({
